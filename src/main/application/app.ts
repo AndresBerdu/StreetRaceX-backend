@@ -6,7 +6,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import router from "./routes/appRouter.ts";
  
-dotenv.config({ path: "./src/infrastructure/.env" });
+dotenv.config({ path: "./src/.env" });
 const app: Application = express();
 
 const PORT = parseInt(process.env.PORT!) || 3000;

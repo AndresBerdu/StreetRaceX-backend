@@ -19,4 +19,10 @@ userRouters
   .patch(updateUserById)
   .delete(deleteUserById);
 
+  userRouters
+  .route("/:username")
+  .get(getUserById)
+  .patch(updateUserById)
+  .delete(deleteUserById);
+
 export default userRouters;
