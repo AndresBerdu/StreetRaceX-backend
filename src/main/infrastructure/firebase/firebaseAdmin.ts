@@ -1,0 +1,14 @@
+import admin from 'firebase-admin';
+import * as fireorm from 'fireorm';
+
+admin.initializeApp({
+  credential: admin.credential.cert({
+    projectId: "street-race-x",
+    clientEmail: "firebase-adminsdk-fbsvc@street-race-x.iam.gserviceaccount.com",
+    privateKey: "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDjivRq+Av6UBUk\nX3d6m3nmBvNcECnknMKyC6DxGLxsxZABr/GF8VoJpi7nFhZ3YcpG3NoHkOQYj9Qf\nmJPtCxGGsFYHePw7c2TNXeUVHNcpg2bMU4v2CDHkoUOcbHT5ZN4vak3rkZptXzaY\n4ykMKxFxWNLXvCmY/JdhgmZHFIyTkIDG38DLF6NZFJ1Aef47m6YbS02C/DPI+nXG\ngU+4TISg6aRgCjlRKN++g70z0oAEtPwnwGvHP2uM4gEL9Kamha2G5rzzI5JRt91V\nyeZyzMTPO1m7srcKjL9TtM1Y5Ma/AUbDEmeeO2JbKWIUw+pPOrKzZ9H067HCdJc2\n1LNHODRPAgMBAAECggEAIVLyZNAbAPfFgOQyXVRzz8pozazYVdDXerfVRDn5Lnzo\nkDaySomERDGAYPuNIsLBmwsxKzZ/EVHPISl5UJf0YyNkFggT+Kj3tFPx/tuQb1X9\nMiNyNgARPoiXnEsN/pBVMeCBtORIF4iAOHfcRRnxngYCKvI1rWAg03kDfZl21Q1n\n+RdQqf3OHbU1eaqxGX6N9Aj+gjE6qAAEHAtjMsXfLODL0RKnTKKUWKxK2vKEIZpn\nNjWgEo2c/AaUc0+HyP1KbGI5hGCWtTgigQdO4avK5KYA9y+XZO+ZF7fwemrNMcER\nd0moNMgExwgvPKRuXXV0i2RyuyK1gZ+iP0h7SEwHAQKBgQD2dqJ5F5Eix6lkEWYR\nJ0V2r5DYIHJ7L4xIcFu2aAwT8tCy2YXvSDznM6+i95SHooEbWrBEed/Nq8iD3uaF\n8hMXqx5CJYjZb+D09vdCyn3g1uEogcZX4fU15a1Xhu52eGs1+6gkfWAOM+Hv+nPP\nFSlpcMwveW3zcD6RSlChs5TIDwKBgQDsWOZxHXR4C8FzJV1cZ4KHeg2AV5v+3+Fl\n7vBT9h/ZG8Y9tG8MVZS5/Tw+UQKECUNhL00eY5K7p7ZqZtPmVQn+Gi3IkDO9DFUg\nxx3AK610hZWg2C5zM7bnEUn5u0GzG7C0iXPFYkBEp9BEXVKIiFQgbdgEbxOtdJZ5\nLUGxbeOPwQKBgHNXBaYBv2w1YDJyaf+xDzMB6pkaZjj8AXyNCH6OpshXJA/u+F0I\nw2e3qoRrtNjc1erFQCRrnK8Vq1r7X4pjxUeYTyrJggev8ejyArkBJnOoW+qnAPlz\nx1uXxs1lWgebRyEWSpP5EJDU+vFhlfzdfGnZ3dSB0VDRwJYh3yYtcn1FAoGBAIEH\ny88nWIWNTXCSjpS7Afz6elJ+AfE0wrZGqzf7X8nEqwbW8eVW95pOkUwoJ+pzsDBn\nhX+4tsvyNNmEB91wwcLTAfnEGCr2h6ccbbaTYeACafzk6P8F1a3yt2M6gxTIYkE9\n5VF2YUXaJA6esEdPvjXyIgPRrHl+9AN13K6EIr9BAoGAFvYdgLm9pwtT6mcS2sUt\nkcNrQw5d2ovLMNCv1k6DTCg/xHV2o5KRLWcvEhoJEDsoq0zThBqtNb/t55MSDEFh\nE6uC0RPphO92APsfcaPjlWiOfBRLH8CT3rdfDxN/kBxY8Efh1nF3C3pnWXvsnjkn\n1vMiK3CDKPxVxDb+jEu03Lo=\n-----END PRIVATE KEY-----\n",
+  }),
+  databaseURL: `https://street-race-x.firebaseio.com`,
+});
+
+const firestore = admin.firestore();
+fireorm.initialize(firestore);
