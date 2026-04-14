@@ -6,25 +6,22 @@ import { v4 as uuidv4 } from "uuid";
 const UserRepository = getRepository(UserModel);
 
 export const fireOrmAuthRepository = (): AuthRepository => ({
-    async sign_in_session() {
-        
-    },
+  async sign_in_session(userCredentials) {
+    const user = await UserRepository.whereEqualTo(
+      "username",
+      userCredentials.username,
+    ).findOne();
 
-    async sign_up_session(user) {
-        const userModel = new UserModel();
+    return user;
+  },
 
-        Object.assign(userModel, user)
+  async sign_up_session(user) {
+    const userModel = new UserModel();
 
-        userModel.id = uuidv4();
+    Object.assign(userModel, user);
 
-        return await UserRepository.create(userModel);
-    },
+    userModel.id = uuidv4();
 
-    async logue_out_session() {
-
-    },
-
-    async refresh_session() {
-
-    }
-})
+    return await UserRepository.create(userModel);
+  },
+});

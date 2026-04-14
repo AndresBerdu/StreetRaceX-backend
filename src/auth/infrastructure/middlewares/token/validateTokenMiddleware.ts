@@ -9,7 +9,7 @@ export const validateToken = (
   const accessToken = req.cookies.access_token;
 
   if (!accessToken) {
-    res.status(401).json({
+    return res.status(401).json({
       ok: false,
       error: "user not authorizated",
     });
