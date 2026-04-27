@@ -2,6 +2,7 @@ import type { Category } from "../../../category/domain/Category.js";
 
 export type User = {
   id?: string;
+  slug: string;
   username: string;
   email: string;
   password: string;

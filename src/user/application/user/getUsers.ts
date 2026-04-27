@@ -1,4 +1,4 @@
-import type { UserRepository } from "../domain/interfaces/IUserRepository.js";
+import type { UserRepository } from "../../domain/interfaces/IUserRepository.js";
 
 export const get_users = (userRepository: UserRepository) => {
   return async (page: number, size: number) => {

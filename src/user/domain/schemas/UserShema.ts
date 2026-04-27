@@ -3,7 +3,7 @@ import { LocalitySchema } from "./LocalitySchema.ts";
 
 export const UserShema = z.object({
   username: z.string().min(2, "minus 2 caracteres in username"),
-  email: z.string().email("The password must be a format email"),
+  email: z.string().email("The email must be a format email"),
   password: z
     .string()
     .min(8, "minimus 8 caracteresin password")

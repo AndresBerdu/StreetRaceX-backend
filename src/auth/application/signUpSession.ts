@@ -8,7 +8,7 @@ export const sign_up_session = (
   userRepository: UserRepository,
 ) => {
   return async (user: User) => {
-    const userExist = await userRepository.get_user_by_username(user.username);
+    const userExist = await userRepository.get_user_by_id(user.id as string);
 
     if (userExist) throw new Error("USER_ALREADY_EXIST");
 

@@ -1,14 +1,16 @@
 import type { Request, Response } from "express";
 import { fireoUserRepository } from "../firebase/fireOrmUserRepository.ts";
 import type { User } from "../../domain/interfaces/User.js";
-import { create_user } from "../../application/createUser.ts";
-import { get_users } from "../../application/getUsers.ts";
-import { get_user_by_id } from "../../application/getUserById.ts";
-import { get_user_by_username } from "../../application/getUserByUsername.ts";
-import { update_user_by_id } from "../../application/updateUserById.ts";
-import { delete_user_by_id } from "../../application/deleteUserById.ts";
+import { create_user } from "../../application/user/createUser.ts";
+import { get_users } from "../../application/user/getUsers.ts";
 import { UserShema } from "../../domain/schemas/UserShema.ts";
 import { ZodError } from "zod/v4";
+import { generateSlug } from "../../../main/infrastructure/utils/generateSlug.ts";
+import { get_user_by_slug } from "../../application/user/getUserBySlug.ts";
+import { delete_user_by_slug } from "../../application/user/deleteUserBySlug.ts";
+import { update_user_by_slug } from "../../application/user/updateUserBySlug.ts";
+import { handleResponse } from "../../../main/infrastructure/middlewares/handleResponseMiddleware.ts";
+import { UpdateUserShema } from "../../domain/schemas/UpdateUserShema.ts";
 
 /* Repository from fireOrmRepository */
 const userRepository = fireoUserRepository();
@@ -26,8 +28,6 @@ export const getUsers = async (req: Request, res: Response) => {
 
     const useCase = get_users(userRepository);
     const { users, totalItems, totalPages } = await useCase(page, size);
-
-    console.log(users);
 
     return res.status(200).json({
       ok: true,
@@ -50,49 +50,11 @@ export const getUsers = async (req: Request, res: Response) => {
 };
 
 /* Function to get a user by the id */
-export const getUserById = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-
-    const useCase = get_user_by_id(userRepository);
-    const user = await useCase(id as string);
-
-    return res.status(200).json({
-      ok: true,
-      data: user,
-      message: "user obteined",
-    });
-  } catch (error) {
-    if (error instanceof Error) {
-      if (error.message === "USER_NOT_FOUNDED") {
-        return res.status(404).json({
-          ok: false,
-          error: "user not founded",
-        });
-      }
-
-      return res.status(500).json({
-        ok: false,
-        error: error.message,
-      });
-    }
-  }
-};
-
-/* Function to get a user by the username */
-export const getUserByUsername = async (req: Request, res: Response) => {
-  try {
-    const { username } = req.params;
-
-    const useCase = get_user_by_username(userRepository);
-    const user = await useCase(username as string);
-
-    return res.status(200).json({
-      ok: true,
-      data: user,
-      message: "user obtenined by username",
-    });
-  } catch (error) {}
+export const getUserBySlug = async (req: Request, res: Response) => {
+  const result = await get_user_by_slug(fireoUserRepository())(
+    req.params.slug as string,
+  );
+  handleResponse(res, result);
 };
 
 /* Functions to create a new user, for logic of use case some values start with next values
@@ -110,6 +72,7 @@ export const createUser = async (req: Request, res: Response) => {
 
     const userData: User = {
       ...parserd,
+      slug: generateSlug("user"),
       rank: "D",
       victories: 0,
       defeats: 0,
@@ -119,33 +82,17 @@ export const createUser = async (req: Request, res: Response) => {
       created_at: new Date(),
     };
 
-    const useCase = create_user(userRepository);
-    const newUser = await useCase(userData);
-
-    return res.status(201).json({
-      ok: true,
-      data: newUser,
-      message: "new user created",
-    });
+    const result = await create_user(fireoUserRepository())(userData);
+    handleResponse(res, result);
   } catch (error) {
-    if (error instanceof ZodError) {
-      return res.status(400).json({
+    if ((error as any)?.constructor?.name === "ZodError") {
+      return res.status(422).json({
         ok: false,
-        error: error.issues.map((issue) => ({
-          path: issue.path,
-          message: issue.message,
-        })),
+        error: (error as any).issues,
       });
     }
 
     if (error instanceof Error) {
-      if (error.message === "USER_ALREADY_EXIST") {
-        return res.status(409).json({
-          ok: false,
-          error: "user already exist",
-        });
-      }
-
       return res.status(500).json({
         ok: false,
         error: error.message,
@@ -155,28 +102,28 @@ export const createUser = async (req: Request, res: Response) => {
 };
 
 /* Function to update some field of user except the id */
-export const updateUserById = async (req: Request, res: Response) => {
+export const updateUserBySlug = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const newData = req.body;
+    const slug = req.params.slug as string;
+    const newData = UpdateUserShema.parse(req.body);
 
-    const useCase = update_user_by_id(userRepository);
-    const updatedUser = await useCase(id as string, newData);
+    console.log(newData)
 
-    return res.status(200).json({
-      ok: true,
-      data: updatedUser,
-      message: "user updated",
-    });
+    const result = await update_user_by_slug(fireoUserRepository())(
+      slug,
+      newData,
+    );
+
+    handleResponse(res, result);
   } catch (error) {
-    if (error instanceof Error) {
-      if (error.message === "YOU_CANNOT_CHANGE_ID_OF_USER") {
-        return res.status(400).json({
-          ok: false,
-          error: "you cannot change id of user",
-        });
-      }
+    if ((error as any)?.constructor?.name === "ZodError") {
+      return res.status(422).json({
+        ok: false,
+        error: (error as any).issues,
+      });
+    }
 
+    if (error instanceof Error) {
       return res.status(500).json({
         ok: false,
         error: error.message,
@@ -185,18 +132,18 @@ export const updateUserById = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteUserById = async (req: Request, res: Response) => {
+export const deleteUserBySlug = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const slug = req.params.slug as string;
 
-    const useCase = delete_user_by_id(userRepository);
-    await useCase(id as string);
+    const useCase = delete_user_by_slug(userRepository);
+    await useCase(slug);
 
-    return res.status(204);
+    return res.status(204).end();
   } catch (error) {
     if (error instanceof Error) {
       if (error.message === "USER_NOT_FOUNDED") {
-        res.status(404).json({
+        return res.status(404).json({
           ok: false,
           error: "user not founded",
         });

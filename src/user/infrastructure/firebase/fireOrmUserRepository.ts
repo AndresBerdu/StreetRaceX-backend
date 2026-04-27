@@ -2,18 +2,30 @@ import { getRepository } from "fireorm";
 import { UserModel } from "./UserModel.ts";
 import type { UserRepository } from "../../domain/interfaces/IUserRepository.js";
 import { v4 as uuidv4 } from "uuid";
+import { VehicleModel } from "../../../vehicle/infrastructure/firebase/VehicleModel.ts";
 
 const userFireRepository = getRepository(UserModel);
+const vehicleFireRepository = getRepository(VehicleModel);
 
 export const fireoUserRepository = (): UserRepository => ({
-  
+  /* FUNCTIONS WITHOUT PARM */
+
   async count_users() {
     const users = await userFireRepository.find();
-    return users.length
+    return users.length;
   },
 
-  async get_users(page: number, size: number) {
-  
+  async get_user_by_username(username) {
+    return await userFireRepository
+      .whereEqualTo("username", username)
+      .findOne();
+  },
+
+  async get_user_by_email(email) {
+    return await userFireRepository.whereEqualTo("email", email).findOne();
+  },
+
+  async get_users(page, size) {
     const skip = (page - 1) * size;
 
     const users = await userFireRepository
@@ -22,24 +34,6 @@ export const fireoUserRepository = (): UserRepository => ({
       .find();
 
     return users.slice(skip, skip + size);
-  },
-
-  async get_user_by_id(id) {
-    const user = await userFireRepository.findById(id);
-
-    if (!user) return null;
-
-    return user;
-  },
-
-  async get_user_by_username(username) {
-    const user = await userFireRepository
-      .whereEqualTo("username", username)
-      .find();
-
-    if (!user[0]) return null;
-
-    return user[0];
   },
 
   async create_user(user) {
@@ -52,31 +46,65 @@ export const fireoUserRepository = (): UserRepository => ({
     return await userFireRepository.create(userModel);
   },
 
-  async update_user_by_id(id, data) {
-    const user = await userFireRepository.findById(id);
+  /* FUNCTIONS WITH USER ID */
 
-    if (!user) {
-      throw new Error("user not found");
-    }
-
-    Object.assign(user, data);
-    user.updated_at = new Date();
-
-    return await userFireRepository.update(user);
+  async get_user_by_id(id) {
+    return userFireRepository.findById(id);
   },
 
-  async update_user_by_username(username) {},
-
-  async delete_user_by_id(id) {
-    console.log(id);
-    const user = await userFireRepository.findById(id);
-
-    if (!user) {
-      throw new Error("user not found");
-    }
-
-    await userFireRepository.delete(id);
+  async get_user_by_slug(slug) {
+    const user = await userFireRepository.whereEqualTo("slug", slug).findOne();
+    
+    return user!;
   },
 
-  async delete_user_by_username(username) {},
+  async update_user_by_slug(slug, data) {
+    const user = await userFireRepository.whereEqualTo("slug", slug).findOne();
+
+    Object.assign(user!, data);
+    user!.updated_at = new Date();
+
+    return await userFireRepository.update(user!);
+  },
+
+  async delete_user_by_slug(slug) {
+    const user = await userFireRepository.whereEqualTo("slug", slug).findOne();
+
+    return await userFireRepository.delete(user?.id!);
+  },
+
+  async get_vehicles_by_user_slug(slug) {
+    const user =  await this.get_user_by_slug(slug)
+
+    return await vehicleFireRepository.whereEqualTo("user_id", user?.id!).find();
+  },
+
+  async create_vehicle_by_user_slug(_slug, vehicle) {
+    
+    const vehicleModel = new VehicleModel();
+
+    Object.assign(vehicleModel, vehicle);
+
+    vehicleModel.id = uuidv4();
+
+    return await vehicleFireRepository.create(vehicleModel);
+  },
+
+  async update_vehicle_with_plate_by_user_slug(_slug, plate, data) {
+    const vehicle = await vehicleFireRepository
+      .whereEqualTo("plate", plate)
+      .findOne();
+
+    Object.assign(vehicle!, data);
+
+    return await vehicleFireRepository.update(vehicle!);
+  },
+
+  async update_vehicle_withOut_plate_by_user_slug(_slug, vehicle_id, data) {
+    const vehicle = await vehicleFireRepository.findById(vehicle_id);
+
+    Object.assign(vehicle, data);
+
+    return vehicleFireRepository.update(vehicle);
+  },
 });

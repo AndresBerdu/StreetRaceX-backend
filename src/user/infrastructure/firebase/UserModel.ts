@@ -18,6 +18,7 @@ export const State = {
 @Collection("users")
 export class UserModel {
   id!: string;
+  slug!: string;
   username!: string;
   email!: string;
   password!: string;

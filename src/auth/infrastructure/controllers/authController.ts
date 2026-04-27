@@ -8,6 +8,7 @@ import { generateRefreshToken, generateToken } from "../util/createToken.ts";
 import { fireoUserRepository } from "../../../user/infrastructure/firebase/fireOrmUserRepository.ts";
 import { sign_in_session } from "../../application/signInSession.ts";
 import { comparatePassword } from "../../../main/infrastructure/security/comparatePassword.ts";
+import { generateSlug } from "../../../main/infrastructure/utils/generateSlug.ts";
 
 const authRepository = fireOrmAuthRepository();
 const userRepository = fireoUserRepository();
@@ -54,10 +55,11 @@ export const signInSession = async (req: Request, res: Response) => {
 
 export const signUpSession = async (req: Request, res: Response) => {
   try {
-    const parserd = UserShema.parse(req.body);
+  const parserd = UserShema.parse(req.body);
 
     const userData: User = {
       ...parserd,
+      slug: generateSlug("user"),
       rank: "D",
       victories: 0,
       defeats: 0,
@@ -81,7 +83,7 @@ export const signUpSession = async (req: Request, res: Response) => {
         ok: true,
         data: newUser,
         message: "new user created",
-      });
+      }); 
   } catch (error) {
     if (error instanceof ZodError) {
       res.status(409).json({
