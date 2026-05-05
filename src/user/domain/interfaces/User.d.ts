@@ -6,8 +6,10 @@ export type User = {
   username: string;
   email: string;
   password: string;
-  profile_photo: string;
+  profile_photo: string | null;
+  public_id_photo: string | null;
   locality: Locality;
+  role: string
   rank: string;
   victories: number;
   defeats: number;

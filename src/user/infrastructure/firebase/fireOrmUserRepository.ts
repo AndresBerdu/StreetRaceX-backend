@@ -1,13 +1,13 @@
 import { getRepository } from "fireorm";
 import { UserModel } from "./UserModel.ts";
-import type { UserRepository } from "../../domain/interfaces/IUserRepository.js";
 import { v4 as uuidv4 } from "uuid";
 import { VehicleModel } from "../../../vehicle/infrastructure/firebase/VehicleModel.ts";
+import type { IUserRepository } from "../../domain/interfaces/ports/IUserRepository.js";
 
 const userFireRepository = getRepository(UserModel);
 const vehicleFireRepository = getRepository(VehicleModel);
 
-export const fireoUserRepository = (): UserRepository => ({
+export const fireOrmUserRepository = (): IUserRepository => ({
   /* FUNCTIONS WITHOUT PARM */
 
   async count_users() {
@@ -46,7 +46,7 @@ export const fireoUserRepository = (): UserRepository => ({
     return await userFireRepository.create(userModel);
   },
 
-  /* FUNCTIONS WITH USER ID */
+  /* FUNCTIONS WITH USER SLUG */
 
   async get_user_by_id(id) {
     return userFireRepository.findById(id);
@@ -54,14 +54,24 @@ export const fireoUserRepository = (): UserRepository => ({
 
   async get_user_by_slug(slug) {
     const user = await userFireRepository.whereEqualTo("slug", slug).findOne();
-    
+
     return user!;
   },
 
   async update_user_by_slug(slug, data) {
     const user = await userFireRepository.whereEqualTo("slug", slug).findOne();
 
-    Object.assign(user!, data);
+    const { locality, ...rest } = data;
+
+    Object.assign(user!, rest);
+
+    if (locality) {
+      user!.locality = {
+        ...user!.locality,
+        ...locality,
+      };
+    }
+
     user!.updated_at = new Date();
 
     return await userFireRepository.update(user!);
@@ -74,13 +84,14 @@ export const fireoUserRepository = (): UserRepository => ({
   },
 
   async get_vehicles_by_user_slug(slug) {
-    const user =  await this.get_user_by_slug(slug)
+    const user = await this.get_user_by_slug(slug);
 
-    return await vehicleFireRepository.whereEqualTo("user_id", user?.id!).find();
+    return await vehicleFireRepository
+      .whereEqualTo("user_id", user?.id!)
+      .find();
   },
 
   async create_vehicle_by_user_slug(_slug, vehicle) {
-    
     const vehicleModel = new VehicleModel();
 
     Object.assign(vehicleModel, vehicle);
@@ -100,11 +111,13 @@ export const fireoUserRepository = (): UserRepository => ({
     return await vehicleFireRepository.update(vehicle!);
   },
 
-  async update_vehicle_withOut_plate_by_user_slug(_slug, vehicle_id, data) {
-    const vehicle = await vehicleFireRepository.findById(vehicle_id);
+  async update_vehicle_with_slug_by_user_slug(_slug, vehicle_slug, data) {
+    const vehicle = await vehicleFireRepository
+      .whereEqualTo("slug", vehicle_slug)
+      .findOne();
 
-    Object.assign(vehicle, data);
+    Object.assign(vehicle!, data);
 
-    return vehicleFireRepository.update(vehicle);
+    return await vehicleFireRepository.update(vehicle!);
   },
 });

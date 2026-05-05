@@ -1,6 +1,6 @@
-import type { UserRepository } from "../../domain/interfaces/IUserRepository.js";
+import type { IUserRepository } from "../../domain/interfaces/ports/IUserRepository.js";
 
-export const delete_user_by_slug = (userRepositoy: UserRepository) => {
+export const delete_user_by_slug = (userRepositoy: IUserRepository) => {
   return async (slug: string) => {
     const userExist = await userRepositoy.get_user_by_slug(slug);
 

@@ -4,14 +4,18 @@ import { LocalitySchema } from "./LocalitySchema.ts";
 export const UserShema = z.object({
   username: z.string().min(2, "minus 2 caracteres in username"),
   email: z.string().email("The email must be a format email"),
+  profile_photo: z
+    .string()
+    .regex(/\.(jpg|jpeg|png)$/i, "only you can send png or jpg/jpeg images")
+    .nullable()
+    .optional(),
   password: z
     .string()
-    .min(8, "minimus 8 caracteresin password")
-    .max(15, "maximus 15 caracteres in password")
+    .min(8, "minimus 8 characters password")
+    .max(15, "maximus 15 characters in password")
     .regex(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*?&])([A-Za-z\d$@$!%*?&]|[^ ]){8,15}$/,
-      "password must have min 8 caracteres, 1 uppercase, 1 number and one especial caracter",
+      "password must have min 8 character, 1 uppercase, 1 number and one especial character",
     ),
-  profile_photo: z.string().url("The profile photo must be format url"),
   locality: LocalitySchema,
 });

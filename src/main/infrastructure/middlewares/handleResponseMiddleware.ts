@@ -9,7 +9,7 @@ export const handleResponse = <T>(res: Response, result: Result<T>) => {
     });
   }
 
-  res.status(200).json({
+  res.status(result.statusCode).json({
     ok: true,
     data: result.data,
     message: result.message,

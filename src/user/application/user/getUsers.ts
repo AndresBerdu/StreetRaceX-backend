@@ -1,6 +1,6 @@
-import type { UserRepository } from "../../domain/interfaces/IUserRepository.js";
+import type { IUserRepository } from "../../domain/interfaces/ports/IUserRepository.js";
 
-export const get_users = (userRepository: UserRepository) => {
+export const get_users = (userRepository: IUserRepository) => {
   return async (page: number, size: number) => {
     const totalItems = await userRepository.count_users();
     const totalPages = Math.ceil(totalItems / size);

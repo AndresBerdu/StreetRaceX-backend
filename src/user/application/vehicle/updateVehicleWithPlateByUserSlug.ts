@@ -1,9 +1,10 @@
-import type { IVehicleRepository } from "../../../vehicle/domain/interfaces/IVehicleRepository.js";
+import type { IVehicleRepository } from "../../../vehicle/domain/interfaces/ports/IVehicleRepository.js";
 import type { Vehicle } from "../../../vehicle/domain/interfaces/Vehicle.js";
-import type { UserRepository } from "../../domain/interfaces/IUserRepository.js";
+import type { IUserRepository } from "../../domain/interfaces/ports/IUserRepository.js";
+
 
 export const update_vehicle_with_plate_by_user_slug = (
-  userRepository: UserRepository,
+  userRepository: IUserRepository,
   vehicleRepository: IVehicleRepository,
 ) => {
   return async (slug: string, plate: string, data: Vehicle) => {

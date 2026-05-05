@@ -4,6 +4,18 @@ export type AppError = {
     message: string;
 }
 
+export const unauthorized = (resource: string): AppError => ({
+    statusCode: 401,
+    code: "UNAUTHORIZED",
+    message: `${resource}`
+})
+
+export const forbidden = (resource: string): AppError => ({
+    statusCode: 403,
+    code: "FORBIDDEN",
+    message: `${resource}`
+})
+
 export const notFound = (resource: string): AppError => ({
     statusCode: 404,
     code: "NOT_FOUND",
@@ -19,13 +31,13 @@ export const alreadyExist = (resource: string): AppError => ({
 export const unprocessableEntity = (resource: string): AppError => ({
     statusCode: 422,
     code: "UNPROCCESABLE_ENTITY",
-    message: `You cannot procces more ${resource}`
+    message: `${resource}`
 })
 
 export const tooManyRequest = (resource: string): AppError => ({
     statusCode: 429,
     code: "TOO_MANY_REQUEST",
-    message: `${resource} too man request`
+    message: `${resource} too many request`
 })
 
 export const internalError = (): AppError => ({

@@ -23,7 +23,9 @@ export class UserModel {
   email!: string;
   password!: string;
   profile_photo!: string;
+  public_id_photo!: string;
   locality!: Locality;
+  role!: string;
   rank!: string;
   victories!: number;
   defeats!: number;

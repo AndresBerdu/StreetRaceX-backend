@@ -1,29 +1,29 @@
 import type { Request, Response } from "express";
-import { fireoUserRepository } from "../firebase/fireOrmUserRepository.ts";
-import { create_vehicle_by_user_id } from "../../application/vehicle/createVehicleByUserSlug.ts";
+import { create_vehicle_by_user_slug } from "../../application/vehicle/createVehicleByUserSlug.ts";
 import { VehicleSchema } from "../../../vehicle/domain/schemas/VehicleShema.ts";
-import { ZodError } from "zod/v4";
 
 import { fireOrmVehicleRepository } from "../../../vehicle/infrastructure/firebase/fireOrmVehicleRepository.ts";
 import { get_vehicles_by_user_slug } from "../../application/vehicle/getVehiclesByUserSlug.ts";
 import { update_vehicle_with_plate_by_user_slug } from "../../application/vehicle/updateVehicleWithPlateByUserSlug.ts";
-import { update_vehicle_withOut_plate_by_user_slug } from "../../application/vehicle/updateVehicleWithOutPlateByUserSlug.ts";
+import { fireOrmUserRepository } from "../firebase/fireOrmUserRepository.ts";
+import { handleResponse } from "../../../main/infrastructure/middlewares/handleResponseMiddleware.ts";
+import { generateSlug } from "../../../main/infrastructure/utils/generateSlug.ts";
+import { uploadImage } from "../../../main/infrastructure/utils/uploadImage.ts";
+import { update_vehicle_with_slug_by_user_slug } from "../../application/vehicle/updateVehicleWithSlugByUserSlug.ts";
+import { updateImage } from "../../../main/infrastructure/utils/updateImage.ts";
+import { UpdateVehicleShema } from "../../../vehicle/domain/schemas/UpdateVehicleShema.ts";
+import { removeUndefinedBoby } from "../../../main/infrastructure/utils/removeUndefinedBoby.ts";
 
-const userVehicleRepository = fireoUserRepository();
+const userVehicleRepository = fireOrmUserRepository();
 const vehicleRepository = fireOrmVehicleRepository();
 
 export const getVehiclesByUserSlug = async (req: Request, res: Response) => {
   try {
     const slug = req.params.slug as string;
 
-    const useCase = get_vehicles_by_user_slug(userVehicleRepository);
-    const vehicles = await useCase(slug);
+    const result = await get_vehicles_by_user_slug(userVehicleRepository)(slug);
 
-    return res.status(200).json({
-      ok: true,
-      data: vehicles,
-      message: "cars obteinded",
-    });
+    return handleResponse(res, result);
   } catch (error) {
     if (error instanceof Error) {
       if (error.message === "THE_USER_DOESN'T_EXIST") {
@@ -43,56 +43,55 @@ export const getVehiclesByUserSlug = async (req: Request, res: Response) => {
 
 export const createVehicleByUserSlug = async (req: Request, res: Response) => {
   try {
+    req.body.year = parseInt(req.body.year);
+
+    if (req.body.plate === "null") {
+      req.body.plate = null;
+    }
+
     const slug = req.params.slug as string;
     const parsered = VehicleSchema.parse(req.body);
 
     const vehicleData = {
       ...parsered,
+      slug: generateSlug("vehicle"),
+      photo: null,
+      public_id_photo: null,
       created_at: new Date(),
     };
 
-    const useCase = create_vehicle_by_user_id(
+    const result = await create_vehicle_by_user_slug(
       userVehicleRepository,
       vehicleRepository,
-    );
+    )(slug, vehicleData);
 
-    const newVehicle = await useCase(slug, vehicleData);
+    /* Validation for upload the image to cloudinary  */
+    if (result.ok && req.file) {
+      const imageUrl = await uploadImage(req, "vehicles/vehicle_photo");
 
-    return res.status(201).json({
-      ok: true,
-      data: newVehicle,
-      message: "vehicle created",
-    });
+      await userVehicleRepository.update_vehicle_with_slug_by_user_slug(
+        slug,
+        result.data.slug,
+        {
+          photo: imageUrl?.imageUrl,
+          public_id_photo: imageUrl?.publicId,
+        },
+      );
+
+      result.data.photo = imageUrl?.imageUrl ?? null;
+      result.data.public_id_photo = imageUrl?.publicId ?? null;
+    }
+
+    handleResponse(res, result);
   } catch (error) {
-    if (error instanceof ZodError) {
-      return res.status(409).json({
+    if ((error as any)?.constructor?.name === "ZodError") {
+      return res.status(422).json({
         ok: false,
-        error: error.issues,
+        error: (error as any).issues,
       });
     }
 
     if (error instanceof Error) {
-      if (error.message === "USER_NOT_FOUNDED") {
-        return res.status(404).json({
-          ok: false,
-          error: "user not founded",
-        });
-      }
-
-      if (error.message === "THIS_VEHICLE_IS_ALREADY_REGISTERED") {
-        return res.status(400).json({
-          ok: false,
-          error: "this vehicle is already registered",
-        });
-      }
-
-      if (error.message === "ONLY_3_VEHICLES_PER_USER") {
-        return res.status(409).json({
-          ok: false,
-          error: "only 3 vehicles per user",
-        });
-      }
-
       return res.status(500).json({
         ok: false,
         error: error.message,
@@ -106,6 +105,14 @@ export const updateVehicleWithPlateByUserSlug = async (
   res: Response,
 ) => {
   try {
+    if (req.body.year) {
+      req.body.year = parseInt(req.body.year);
+    }
+
+    if (req.body.plate === "null") {
+      req.body.plate = null;
+    }
+
     const slug = req.params.slug as string;
     const plate = req.params.plate as string;
     const data = req.body;
@@ -123,19 +130,6 @@ export const updateVehicleWithPlateByUserSlug = async (
     });
   } catch (error) {
     if (error instanceof Error) {
-      if (error.message === "USER_NOT_FOUND") {
-        res.status(404).json({
-          ok: false,
-          error: "user not found",
-        });
-      }
-
-      if (error.message === "VEHICLE_NOT_FOUND") {
-        res.status(404).json({
-          ok: false,
-          error: "vehicle not found",
-        });
-      }
       res.status(500).json({
         ok: false,
         error: error.message,
@@ -144,24 +138,53 @@ export const updateVehicleWithPlateByUserSlug = async (
   }
 };
 
-export const updateVehicleWithOutPlateByUserSlug = async (
+export const updateVehicleWithSlugByUserSlug = async (
   req: Request,
   res: Response,
 ) => {
   try {
+    if (req.body.year) {
+      req.body.year = parseInt(req.body.year);
+    }
+
+    if (req.body.plate === "null") {
+      req.body.plate = null;
+    }
+
     const slug = req.params.slug as string;
-    const vehicle_id = req.params.vehicle_id as string;
-    const data = req.body
+    const vehicle_slug = req.params.vehicle_slug as string;
+    let newData = UpdateVehicleShema.parse(req.body);
 
-    const useCase = update_vehicle_withOut_plate_by_user_slug(userVehicleRepository);
-    const vehicle = await useCase(slug, vehicle_id, data);
+    newData = removeUndefinedBoby(newData);
 
-    return res.status(200).json({
-      ok: true,
-      data: vehicle,
-      message: "Vehicle update"
-    })
+    const result = await update_vehicle_with_slug_by_user_slug(
+      userVehicleRepository,
+      vehicleRepository,
+    )(slug, vehicle_slug, newData);
 
+    if (!result.ok) return handleResponse(res, result);
+
+    if (result.ok && req.file) {
+      const imageUrl = await updateImage(
+        req.file.buffer,
+        result.data.public_id_photo,
+        "vehicles/vehicle_photo",
+      );
+
+      await userVehicleRepository.update_vehicle_with_slug_by_user_slug(
+        slug,
+        vehicle_slug,
+        {
+          photo: imageUrl.imageUrl,
+          public_id_photo: imageUrl.publicId,
+        },
+      );
+
+      result.data.photo = imageUrl.imageUrl;
+      result.data.public_id_photo = imageUrl.publicId;
+    }
+
+    return handleResponse(res, result);
   } catch (error) {
     if (error instanceof Error) {
       res.status(500).json({

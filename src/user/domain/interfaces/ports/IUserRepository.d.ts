@@ -1,7 +1,7 @@
 import type { Vehicle } from "../../../vehicle/domain/interfaces/Vehicle.js";
 import type { User } from "./User.js";
 
-export interface UserRepository {
+export interface IUserRepository {
   //auxiliar functions
   count_users(): Promise<number>;
   get_user_by_username(username: string): Promise<User | null>;
@@ -23,7 +23,7 @@ export interface UserRepository {
     plate: string,
     data: Vehicle,
   ): Promise<Vehicle>;
-  update_vehicle_withOut_plate_by_user_slug(
+  update_vehicle_with_slug_by_user_slug(
     slug: string,
     vehicle_id: string,
     data: Vehicle,

@@ -1,4 +1,4 @@
-import type { IVehicleRepository } from "../domain/interfaces/IVehicleRepository.js";
+import type { IVehicleRepository } from "../domain/interfaces/ports/IVehicleRepository.js";
 
 export const get_vehicle_by_plate = (vehicleRepository: IVehicleRepository) => {
   return async (plate: string) => {
