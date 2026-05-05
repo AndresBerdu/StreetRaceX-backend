@@ -1,7 +1,7 @@
-export type Category = {
-    id: string;
-    name: string;
-    user_id: string;
-    description: string;
-    active: boolean;
+export interface CompetitionCategory {
+  id: string;
+  name: string;
+  description: string;
+  active: boolean;
+  created_at: Date;
 }
