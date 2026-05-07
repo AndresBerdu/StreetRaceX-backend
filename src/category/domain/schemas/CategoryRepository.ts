@@ -1,9 +1,12 @@
-import type { CompetitionCategory } from "../Category.js";
+import { z } from "zod";
 
-export interface ICategoryRepository {
-  create(data: CompetitionCategory): Promise<CompetitionCategory>;
-  findAll(): Promise<CompetitionCategory[]>;
-  findById(id: string): Promise<CompetitionCategory | null>;
-  update(id: string, data: Partial<CompetitionCategory>): Promise<void>;
-  delete(id: string): Promise<void>;
-}
+export const createCategorySchema = z.object({
+  name: z.string().min(1),
+  description: z.string().optional()
+});
+
+export const updateCategorySchema = z.object({
+  name: z.string().optional(),
+  description: z.string().optional(),
+  active: z.boolean().optional()
+});
