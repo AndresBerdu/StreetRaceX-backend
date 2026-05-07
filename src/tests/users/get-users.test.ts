@@ -1,27 +1,36 @@
 import request from "supertest";
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { app } from "../../server.ts";
 
-/* 
-KEEP IN MAIN: if in db test you don't have access token the test will faild 
-*/
-
 describe("get users", () => {
+  let userSlug = "";
   let cookies: string[];
-
   /* Preparation for sign in wih user and logue out after */
   beforeAll(async () => {
-    const loginResult = await request(app)
-      .post("/api/auth/sign-in-session")
-      .send({ username: "pedro", password: "Frutamadre09?" });
+    const res = await request(app)
+      .post("/api/auth/sign-up-session")
+      .field("username", "test-5")
+      .field("password", "TestPassword09?")
+      .field("email", "test-5@gmail.com")
+      .field(
+        "locality",
+        JSON.stringify({
+          zone_localicity: "12 de Octubre",
+          zone_city: "Medellín",
+          zone_state: "Antioquia",
+          zone_country: "Colombia",
+        }),
+      );
 
-    const rawCookies = loginResult.headers["set-cookie"];
+    const rawCookies = res.headers["set-cookie"];
 
     cookies = Array.isArray(rawCookies)
       ? rawCookies
       : rawCookies
         ? [rawCookies]
         : [];
+
+    userSlug = res.body.data.slug;
   });
 
   /* Test happu path user login and return access token and refresh tokn  */
@@ -41,11 +50,15 @@ describe("get users", () => {
     expect(res.body).toHaveProperty("message");
   });
 
-  it("Shoud return 403 if you don't provide access_token", async () => {
+  it("Shoud fail if you don't provide access_token", async () => {
     const res = await request(app)
       .post("/api/users")
       .query({ page: 2, size: 10 });
 
     expect(res.status).toBe(401);
+  });
+
+  afterAll(async () => {
+    await request(app).delete(`/api/users/${userSlug}`).set("Cookie", cookies);
   });
 });

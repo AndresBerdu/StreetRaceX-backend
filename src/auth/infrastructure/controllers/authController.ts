@@ -11,9 +11,10 @@ import { refresh_session } from "../../application/refreshSession.ts";
 import { generateRefreshToken, generateToken } from "../util/createToken.ts";
 import { generateSlug } from "../../../main/infrastructure/utils/generateSlug.ts";
 import { UserShema } from "../../../user/domain/schemas/UserShema.ts";
-import type { User } from "../../../user/domain/interfaces/User.ts";
+import type { Locality, User } from "../../../user/domain/interfaces/User.ts";
 import { redisAuthRepository } from "../adapters/redisAuthRepository.ts";
 import type { ZodError } from "zod/v4";
+import { getPayloadToken } from "../util/getPayloadToken.ts";
 
 /* Repositories from fire ORM */
 const authFireRepository = fireOrmAuthRepository();
@@ -23,14 +24,11 @@ const userFireRepository = fireOrmUserRepository();
 /* Controller for Login */
 export const signInSession = async (req: Request, res: Response) => {
   try {
-    const { username, email, password, profile_photo, locality } = req.body;
+    const { username, password } = req.body;
 
     const userCredentials = {
       username,
-      email,
       password,
-      profile_photo,
-      locality,
     };
 
     const result = await sign_in_session(
@@ -40,22 +38,37 @@ export const signInSession = async (req: Request, res: Response) => {
 
     let slug = "";
     let role = "";
+    let email = "";
+    let locality;
 
     if (result.ok) {
       slug = result.data.slug;
       role = result.data.role;
+      email = result.data.email;
+      locality = result.data.locality;
     }
 
-    const token = generateToken({ slug, username, email, locality, role });
+    const token = generateToken({
+      slug,
+      username,
+      email,
+      locality: locality as Locality,
+      role,
+    });
     const refreshToken = generateRefreshToken({ slug, username, role });
 
-    res
-      .cookie("access_token", token, { maxAge: 1000 * 60 * 60 })
-      .cookie("refresh_token", refreshToken, {
-        maxAge: 1000 * 60 * 60 * 24 * 7,
-      });
-
-    handleResponse(res, result);
+    handleResponse(res, result, [
+      {
+        name: "access_token",
+        value: token,
+        options: { maxAge: 1000 * 60 * 60 },
+      },
+      {
+        name: "refresh_token",
+        value: refreshToken,
+        options: { maxAge: 1000 * 60 * 60 * 24 * 7 },
+      },
+    ]);
   } catch (error) {
     if (error instanceof Error) {
       return res.status(500).json({
@@ -118,19 +131,25 @@ export const signUpSession = async (req: Request, res: Response) => {
       role: "racer",
       slug: userData.slug,
     });
+
     const refreshToken = generateRefreshToken({
       slug: userData.slug,
       username,
       role: "racer",
     });
 
-    res
-      .cookie("access_token", token, { maxAge: 1000 * 60 * 60 })
-      .cookie("refresh_token", refreshToken, {
-        maxAge: 1000 * 60 * 60 * 24 * 7,
-      });
-
-    handleResponse(res, result);
+    handleResponse(res, result, [
+      {
+        name: "access_token",
+        value: token,
+        options: { maxAge: 1000 * 60 * 60 },
+      },
+      {
+        name: "refresh_token",
+        value: refreshToken,
+        options: { maxAge: 1000 * 60 * 60 * 24 * 7 },
+      },
+    ]);
   } catch (error) {
     if ((error as ZodError)?.constructor?.name === "ZodError") {
       return res.status(422).json({
@@ -177,20 +196,41 @@ export const logueOutSession = async (req: Request, res: Response) => {
 export const refreshSession = async (req: Request, res: Response) => {
   try {
     const { refresh_token } = req.cookies;
-    const userCredentials = req.body;
 
-    const token = generateToken(userCredentials);
-    const refreshToken = generateRefreshToken(userCredentials);
+    const userCredentials = getPayloadToken(refresh_token);
+
+    if (!userCredentials) {
+      return res.status(401).json({ ok: false, error: "Invalid token" });
+    }
+
+    const token = generateToken({
+      username: userCredentials.username,
+      email: userCredentials.email,
+      locality: userCredentials.locality,
+      role: userCredentials.role,
+      slug: userCredentials.slug,
+    });
+
+    const refreshToken = generateRefreshToken({
+      slug: userCredentials.slug,
+      username: userCredentials.username,
+      role: userCredentials.role,
+    });
 
     const result = await refresh_session(authRedisRepository)(refresh_token);
 
-    res
-      .cookie("access_token", token, { maxAge: 1000 * 60 * 60 })
-      .cookie("refresh_token", refreshToken, {
-        maxAge: 1000 * 60 * 60 * 24 * 7,
-      });
-
-    handleResponse(res, result);
+    handleResponse(res, result, [
+      {
+        name: "access_token",
+        value: token,
+        options: { maxAge: 1000 * 60 * 60 },
+      },
+      {
+        name: "refresh_token",
+        value: refreshToken,
+        options: { maxAge: 1000 * 60 * 60 * 24 * 7 },
+      },
+    ]);
   } catch (error) {
     if (error instanceof Error) {
       return res.status(500).json({

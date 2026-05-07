@@ -39,9 +39,3 @@ export const tooManyRequest = (resource: string): AppError => ({
     code: "TOO_MANY_REQUEST",
     message: `${resource} too many request`
 })
-
-export const internalError = (): AppError => ({
-    statusCode: 500,
-    code: "INTERNAL_ERROR",
-    message: "Internal server error"
-})

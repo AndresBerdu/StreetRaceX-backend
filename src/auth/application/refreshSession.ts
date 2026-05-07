@@ -7,8 +7,7 @@ export const refresh_session = (authRepository: IBannedRepository) => {
     const tokenExist = await authRepository.is_token_banned(refresh_token);
 
     /* Validation if the user try to get a new session with tokens banned */
-    if (tokenExist)
-      return failure(unauthorized("Your token is invalid"));
+    if (tokenExist) return failure(unauthorized("Your token is invalid"));
 
     return success(204, null, "New token created");
   };

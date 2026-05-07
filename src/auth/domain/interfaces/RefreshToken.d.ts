@@ -1,5 +1,5 @@
 export type RefreshToken = {
-    slug?: string;
+    slug: string;
     username: string;
     role: string
 }

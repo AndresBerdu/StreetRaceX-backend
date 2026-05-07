@@ -57,6 +57,7 @@ export const fireOrmUserRepository = (): IUserRepository => ({
 
     return user!;
   },
+  
 
   async update_user_by_slug(slug, data) {
     const user = await userFireRepository.whereEqualTo("slug", slug).findOne();
@@ -119,5 +120,21 @@ export const fireOrmUserRepository = (): IUserRepository => ({
     Object.assign(vehicle!, data);
 
     return await vehicleFireRepository.update(vehicle!);
+  },
+
+  async delete_vehicle_with_plate_by_user_slug(_slug, plate) {
+    const vehicle = await vehicleFireRepository
+      .whereEqualTo("plate", plate)
+      .findOne();
+
+    return await vehicleFireRepository.delete(vehicle?.id!);
+  },
+
+  async delete_vehicle_with_slug_by_user_slug(_slug, vehicle_slug) {
+    const vehicle = await vehicleFireRepository
+      .whereEqualTo("slug", vehicle_slug)
+      .findOne();
+
+    return await vehicleFireRepository.delete(vehicle?.id!);
   },
 });

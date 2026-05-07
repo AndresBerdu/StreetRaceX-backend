@@ -14,6 +14,7 @@ import { encryptPassword } from "../../../main/infrastructure/security/encryptPa
 import { uploadImage } from "../../../main/infrastructure/utils/uploadImage.ts";
 import { removeUndefinedBoby } from "../../../main/infrastructure/utils/removeUndefinedBoby.ts";
 import { updateImage } from "../../../main/infrastructure/utils/updateImage.ts";
+import type { ZodError } from "zod/v4";
 
 /* Repository from fireOrmRepository */
 const userFireRepository = fireOrmUserRepository();
@@ -54,10 +55,19 @@ export const getUsers = async (req: Request, res: Response) => {
 
 /* Function to get a user by the id */
 export const getUserBySlug = async (req: Request, res: Response) => {
-  const result = await get_user_by_slug(userFireRepository)(
-    req.params.slug as string,
-  );
-  handleResponse(res, result);
+  try {
+    const result = await get_user_by_slug(userFireRepository)(
+      req.params.slug as string,
+    );
+    handleResponse(res, result);
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(500).json({
+        ok: false,
+        error: error.message,
+      });
+    }
+  }
 };
 
 /* Functions to create a new user, for logic of use case some values start with next values
@@ -102,7 +112,7 @@ export const createUser = async (req: Request, res: Response) => {
 
       await userFireRepository.update_user_by_slug(result.data.slug, {
         profile_photo: imageUrl?.imageUrl,
-        public_id_photo: imageUrl?.publicId
+        public_id_photo: imageUrl?.publicId,
       });
 
       result.data.profile_photo = imageUrl?.imageUrl ?? null;
@@ -118,10 +128,12 @@ export const createUser = async (req: Request, res: Response) => {
       });
     }
 
-    if ((error as any)?.constructor?.name === "ZodError") {
+    if ((error as ZodError)?.constructor?.name === "ZodError") {
       return res.status(422).json({
         ok: false,
-        error: (error as any).issues,
+        error: (error as ZodError).issues.map((issue) => {
+          return issue.message;
+        }),
       });
     }
 
@@ -137,8 +149,12 @@ export const createUser = async (req: Request, res: Response) => {
 /* Function to update some field of user except the id */
 export const updateUserBySlug = async (req: Request, res: Response) => {
   try {
-    if (typeof req.body.locality === "string") {
-      req.body.locality = JSON.parse(req.body.locality);
+    if (req.headers["content-type"]?.includes("multipart/form-data")) {
+      res.status(415).json({
+        ok: false,
+        error: "Content-Type must be application/json",
+      });
+      return;
     }
 
     const slug = req.params.slug as string;
@@ -148,28 +164,14 @@ export const updateUserBySlug = async (req: Request, res: Response) => {
 
     const result = await update_user_by_slug(userFireRepository)(slug, newData);
 
-    if (result.ok && req.file) {
-      const imageUrl = await updateImage(
-        req.file.buffer,
-        result.data.public_id_photo,
-        "users/profile_photos",
-      );
-
-      await userFireRepository.update_user_by_slug(result.data.slug, {
-        profile_photo: imageUrl?.imageUrl,
-        public_id_photo: imageUrl?.publicId
-      });
-
-      result.data.profile_photo = imageUrl.imageUrl;
-      result.data.public_id_photo = imageUrl.publicId;
-    }
-
     handleResponse(res, result);
   } catch (error) {
-    if ((error as any)?.constructor?.name === "ZodError") {
+    if ((error as ZodError)?.constructor?.name === "ZodError") {
       return res.status(422).json({
         ok: false,
-        error: (error as any).issues,
+        error: (error as ZodError).issues.map((issue) => {
+          return issue.message;
+        }),
       });
     }
 
@@ -182,14 +184,55 @@ export const updateUserBySlug = async (req: Request, res: Response) => {
   }
 };
 
+export const updateUserProfilePhoto = async (req: Request, res: Response) => {
+  try {
+    const slug = req.params.slug as string;
+
+    if (!req.file) {
+      return res
+        .status(400)
+        .json({ ok: false, error: "Profile photo is required" });
+    }
+
+    const user = await userFireRepository.get_user_by_slug(slug);
+
+    if (!user) {
+      return res.status(404).json({ ok: false, error: "User not found" });
+    }
+
+    const imageUrl = await updateImage(
+      req.file.buffer,
+      user.public_id_photo,
+      "users/profile_photos",
+    );
+
+    await userFireRepository.update_user_by_slug(user.slug, {
+      profile_photo: imageUrl?.imageUrl,
+      public_id_photo: imageUrl?.publicId,
+    });
+
+    user.profile_photo = imageUrl.imageUrl;
+    user.public_id_photo = imageUrl.publicId;
+
+    return res.status(200).json({
+      ok: true,
+      data: { profile_photo: imageUrl?.imageUrl },
+      message: "Profile photo updated",
+    });
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(500).json({ ok: false, error: error.message });
+    }
+  }
+};
+
 export const deleteUserBySlug = async (req: Request, res: Response) => {
   try {
     const slug = req.params.slug as string;
 
-    const useCase = delete_user_by_slug(userFireRepository);
-    await useCase(slug);
+    const result = await delete_user_by_slug(userFireRepository)(slug);
 
-    return res.status(204).end();
+    return handleResponse(res, result);
   } catch (error) {
     if (error instanceof Error) {
       return res.status(500).json({

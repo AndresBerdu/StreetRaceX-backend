@@ -1,23 +1,37 @@
 import request from "supertest";
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { app } from "../../server.ts";
 
 describe("Auth refresh session", () => {
+  let userSlug = "";
   let cookies: string[];
 
-  /* Preparation for sign in with one user  */
+  /* Preparation for sign in wih user and logue out after */
   beforeAll(async () => {
-    const loginResult = await request(app)
-      .post("/api/auth/sign-in-session")
-      .send({ username: "pedro", password: "Frutamadre09?" });
+    const res = await request(app)
+      .post("/api/auth/sign-up-session")
+      .field("username", "test-3")
+      .field("password", "TestPassword09?")
+      .field("email", "test-3@gmail.com")
+      .field(
+        "locality",
+        JSON.stringify({
+          zone_localicity: "12 de Octubre",
+          zone_city: "Medellín",
+          zone_state: "Antioquia",
+          zone_country: "Colombia",
+        }),
+      );
 
-    const rawCookies = loginResult.headers["set-cookie"];
+    const rawCookies = res.headers["set-cookie"];
 
     cookies = Array.isArray(rawCookies)
       ? rawCookies
       : rawCookies
         ? [rawCookies]
         : [];
+
+    userSlug = res.body.data.slug;
   });
 
   /* Test happy path new user create */
@@ -31,6 +45,7 @@ describe("Auth refresh session", () => {
 
     /* Cookies response */
     const newCookies = res.headers["set-cookie"] ?? [];
+
     expect(newCookies.length).toBeGreaterThan(0);
 
     if (Array.isArray(newCookies)) {
@@ -50,5 +65,9 @@ describe("Auth refresh session", () => {
     const res = await request(app).post("/api/auth/logue-out-session");
 
     expect(res.status).toBe(401);
+  });
+
+  afterAll(async () => {
+    await request(app).delete(`/api/users/${userSlug}`).set("Cookie", cookies);
   });
 });

@@ -4,16 +4,15 @@ import { app } from "../../server.ts";
 
 describe("Auth sign up session", () => {
   /* Test happy path new user create */
-
   let userSlug = "";
   let cookies: string[];
 
   it("Should create a new user", async () => {
     const res = await request(app)
       .post("/api/auth/sign-up-session")
-      .field("username", "andres")
-      .field("password", "Frutamadre09?")
-      .field("email", "andres@gmail.com")
+      .field("username", "test-2")
+      .field("password", "TestPassword09?")
+      .field("email", "test-2@gmail.com")
       .field(
         "locality",
         JSON.stringify({
@@ -24,6 +23,16 @@ describe("Auth sign up session", () => {
         }),
       )
       .attach("profile_photo", "src/tests/files/takumiImage.jpg");
+
+    const rawCookies = res.headers["set-cookie"];
+
+    cookies = Array.isArray(rawCookies)
+      ? rawCookies
+      : rawCookies
+        ? [rawCookies]
+        : [];
+
+    userSlug = res.body.data.slug;
 
     /* Status code response */
     expect(res.status).toBe(201);
@@ -32,26 +41,15 @@ describe("Auth sign up session", () => {
     expect(res.body).toHaveProperty("ok", true);
     expect(res.body).toHaveProperty("data");
     expect(res.body).toHaveProperty("message");
-
-    const rawCookies = res.headers["set-cookie"];
-
-    // Normalizamos: siempre será un string[]
-    cookies = Array.isArray(rawCookies)
-      ? rawCookies
-      : rawCookies
-        ? [rawCookies]
-        : [];
-
-    userSlug = res.body.data.slug;
   });
 
   /* Test username equals */
   it("Shoud fail if there have a user with same username than other", async () => {
     const res = await request(app)
       .post("/api/auth/sign-up-session")
-      .field("username", "andres")
+      .field("username", "test-2")
       .field("password", "Frutamadre09?")
-      .field("email", "pedro@gmail.com")
+      .field("email", "something@gmail.com")
       .field(
         "locality",
         JSON.stringify({
@@ -71,13 +69,13 @@ describe("Auth sign up session", () => {
     expect(res.body).toHaveProperty("error");
   });
 
-    /* Test email equals */
+  /* Test email equals */
   it("Shoud fail if there have a user with same email than other", async () => {
     const res = await request(app)
       .post("/api/auth/sign-up-session")
       .field("username", "something")
       .field("password", "Frutamadre09?")
-      .field("email", "andres@gmail.com")
+      .field("email", "test-2@gmail.com")
       .field(
         "locality",
         JSON.stringify({
@@ -96,7 +94,6 @@ describe("Auth sign up session", () => {
     expect(res.body).toHaveProperty("ok", false);
     expect(res.body).toHaveProperty("error");
   });
-
 
   afterAll(async () => {
     await request(app).delete(`/api/users/${userSlug}`).set("Cookie", cookies);

@@ -5,5 +5,5 @@ export type Token = {
   email: string;
   locality: Locality;
   role: string;
-  slug?: string;
+  slug: string;
 }

@@ -13,6 +13,9 @@ import { update_vehicle_with_slug_by_user_slug } from "../../application/vehicle
 import { updateImage } from "../../../main/infrastructure/utils/updateImage.ts";
 import { UpdateVehicleShema } from "../../../vehicle/domain/schemas/UpdateVehicleShema.ts";
 import { removeUndefinedBoby } from "../../../main/infrastructure/utils/removeUndefinedBoby.ts";
+import { delete_vehicle_with_plate_by_user_slug } from "../../application/vehicle/deleteVehicleWithPlateByUserSlug.ts";
+import { delete_vehicle_with_slug_by_user_slug } from "../../application/vehicle/deleteVehicleWithSlugByUserSlug.ts";
+import type { ZodError } from "zod/v4";
 
 const userVehicleRepository = fireOrmUserRepository();
 const vehicleRepository = fireOrmVehicleRepository();
@@ -65,29 +68,14 @@ export const createVehicleByUserSlug = async (req: Request, res: Response) => {
       vehicleRepository,
     )(slug, vehicleData);
 
-    /* Validation for upload the image to cloudinary  */
-    if (result.ok && req.file) {
-      const imageUrl = await uploadImage(req, "vehicles/vehicle_photo");
-
-      await userVehicleRepository.update_vehicle_with_slug_by_user_slug(
-        slug,
-        result.data.slug,
-        {
-          photo: imageUrl?.imageUrl,
-          public_id_photo: imageUrl?.publicId,
-        },
-      );
-
-      result.data.photo = imageUrl?.imageUrl ?? null;
-      result.data.public_id_photo = imageUrl?.publicId ?? null;
-    }
-
     handleResponse(res, result);
   } catch (error) {
-    if ((error as any)?.constructor?.name === "ZodError") {
+    if ((error as ZodError)?.constructor?.name === "ZodError") {
       return res.status(422).json({
         ok: false,
-        error: (error as any).issues,
+        error: (error as ZodError).issues.map((issue) => {
+          return issue.message;
+        }),
       });
     }
 
@@ -115,22 +103,52 @@ export const updateVehicleWithPlateByUserSlug = async (
 
     const slug = req.params.slug as string;
     const plate = req.params.plate as string;
-    const data = req.body;
+    let newData = UpdateVehicleShema.parse(req.body);
 
-    const useCase = update_vehicle_with_plate_by_user_slug(
+    newData = removeUndefinedBoby(newData);
+
+    const result = await update_vehicle_with_plate_by_user_slug(
       userVehicleRepository,
       vehicleRepository,
-    );
-    const vehicleUpdated = await useCase(slug, plate, data);
+    )(slug, plate, newData);
 
-    res.status(200).json({
-      ok: true,
-      data: vehicleUpdated,
-      message: "vehicle updated",
-    });
+    handleResponse(res, result);
   } catch (error) {
+    if ((error as ZodError)?.constructor?.name === "ZodError") {
+      return res.status(422).json({
+        ok: false,
+        error: (error as ZodError).issues.map((issue) => {
+          return issue.message;
+        }),
+      });
+    }
+
     if (error instanceof Error) {
       res.status(500).json({
+        ok: false,
+        error: error.message,
+      });
+    }
+  }
+};
+
+export const deleteVehicleWithPlateByUserSlug = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const slug = req.params.slug as string;
+    const plate = req.params.plate as string;
+
+    const result = await delete_vehicle_with_plate_by_user_slug(
+      userVehicleRepository,
+      vehicleRepository,
+    )(slug, plate);
+
+    return handleResponse(res, result);
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(500).json({
         ok: false,
         error: error.message,
       });
@@ -162,28 +180,6 @@ export const updateVehicleWithSlugByUserSlug = async (
       vehicleRepository,
     )(slug, vehicle_slug, newData);
 
-    if (!result.ok) return handleResponse(res, result);
-
-    if (result.ok && req.file) {
-      const imageUrl = await updateImage(
-        req.file.buffer,
-        result.data.public_id_photo,
-        "vehicles/vehicle_photo",
-      );
-
-      await userVehicleRepository.update_vehicle_with_slug_by_user_slug(
-        slug,
-        vehicle_slug,
-        {
-          photo: imageUrl.imageUrl,
-          public_id_photo: imageUrl.publicId,
-        },
-      );
-
-      result.data.photo = imageUrl.imageUrl;
-      result.data.public_id_photo = imageUrl.publicId;
-    }
-
     return handleResponse(res, result);
   } catch (error) {
     if (error instanceof Error) {
@@ -191,6 +187,83 @@ export const updateVehicleWithSlugByUserSlug = async (
         ok: false,
         error: error.message,
       });
+    }
+  }
+};
+
+export const deleteVehicleWithSlugByUserSlug = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const slug = req.params.slug as string;
+    const vehicle_slug = req.params.vehicle_slug as string;
+
+    const result = await delete_vehicle_with_slug_by_user_slug(
+      userVehicleRepository,
+      vehicleRepository,
+    )(slug, vehicle_slug);
+
+    return handleResponse(res, result);
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(500).json({
+        ok: false,
+        error: error.message,
+      });
+    }
+  }
+};
+
+export const updateVehiclePhoto = async (req: Request, res: Response) => {
+  try {
+    const slug = req.params.slug as string;
+    const vehicle_slug = req.params.vehicle_slug as string;
+
+    if (!req.file) {
+      return res
+        .status(400)
+        .json({ ok: false, error: "Vehicle photo is required" });
+    }
+
+    const user = await userVehicleRepository.get_user_by_slug(slug);
+
+    if (!user) {
+      return res.status(404).json({ ok: false, error: "User not found" });
+    }
+
+    const vehicle = await vehicleRepository.get_vehicle_by_slug(vehicle_slug);
+
+    if (!vehicle) {
+      return res.status(404).json({ ok: false, error: "Vehicle not found" });
+    }
+
+    const imageUrl = await updateImage(
+      req.file.buffer,
+      vehicle.public_id_photo,
+      "vehicles/vehicle_photo",
+    );
+
+    await userVehicleRepository.update_vehicle_with_slug_by_user_slug(
+      user.slug,
+      vehicle.slug,
+      {
+        photo: imageUrl?.imageUrl,
+        public_id_photo: imageUrl?.publicId,
+      },
+    );
+
+    vehicle.photo = imageUrl.imageUrl;
+    vehicle.public_id_photo = imageUrl.publicId;
+
+    return res.status(200).json({
+      ok: true,
+      data: { profile_photo: imageUrl?.imageUrl },
+      message: "Vehicle photo updated",
+    });
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(500).json({ ok: false, error: error.message });
     }
   }
 };
