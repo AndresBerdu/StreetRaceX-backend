@@ -1,3 +1,18 @@
+export enum ChallengeStatus {
+  PENDIENTE = 'PENDIENTE',
+  ACEPTADO = 'ACEPTADO',
+  RECHAZADO = 'RECHAZADO',
+  EN_CURSO = 'EN_CURSO',
+  COMPLETADO = 'COMPLETADO',
+  CANCELADO = 'CANCELADO',
+}
+
+export enum TipoCarrera {
+  CUARTO_MILLA = 'CUARTO_MILLA',
+  VUELTAS = 'VUELTAS',
+  DERRAPE = 'DERRAPE',
+}
+
 export type Chanllenge = {
   id: string;
   challenger_id: string;
