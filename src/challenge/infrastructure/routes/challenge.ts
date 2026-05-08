@@ -9,24 +9,24 @@ import {
   startChallengeController,
 } from "../controllers/challengeController.ts";
 
-const router = Router();
+const challengesRoutes = Router();
 
 // CREATE
-router.post("/", createChallengeController);
+challengesRoutes.post("/", createChallengeController);
 
 // ACCEPT
-router.patch("/:id/accept", acceptChallengeController);
+challengesRoutes.patch("/:id/accept", acceptChallengeController);
 
 // REJECT
-router.patch("/:id/reject", rejectChallengeController);
+challengesRoutes.patch("/:id/reject", rejectChallengeController);
 
 // CANCEL
-router.patch("/:id/cancel", cancelChallengeController);
+challengesRoutes.patch("/:id/cancel", cancelChallengeController);
 
 // START
-router.patch("/:id/start", startChallengeController);
+challengesRoutes.patch("/:id/start", startChallengeController);
 
 // COMPLETE
-router.patch("/:id/complete", completeChallengeController);
+challengesRoutes.patch("/:id/complete", completeChallengeController);
 
-export default router;
+export default challengesRoutes;
