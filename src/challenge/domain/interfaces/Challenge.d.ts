@@ -13,8 +13,8 @@ export enum TipoCarrera {
   DERRAPE = 'DERRAPE',
 }
 
-export type Chanllenge = {
-  id: string;
+export type Challenge = {
+  id?: string;
   challenger_id: string;
   challenged_id: string;
   type_race: Type_race;
@@ -25,8 +25,8 @@ export type Chanllenge = {
   race_location: string;
   race_date: Date;
   notes: string;
-  created_at: string;
-  updated_at: string;
+  created_at: Date;
+  updated_at: Date;
 };
 
 export type Type_race = "quarter_mile" | "loops" | "drif";

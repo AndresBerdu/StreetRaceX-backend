@@ -1,4 +1,4 @@
-import { ChallengeStatus } from "../domain/Challenge.js";
+import { ChallengeStatus } from "../domain/interfaces/Challenge.js";
 
 export class StartChallengeUseCase {
   constructor(private readonly challengeRepo: any) {}

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { TipoCarrera } from '../Challenge.js';
+import { TipoCarrera } from '../interfaces/Challenge.js';
 
 export const createChallengeSchema = z.object({
   retador_id: z.string().uuid(),
