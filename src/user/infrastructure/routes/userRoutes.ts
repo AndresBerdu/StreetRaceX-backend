@@ -86,6 +86,8 @@ userRouters
   );
 
 // User with notification routes
-userRouters.route("/:slug/rank").put(updateUserRankController);
+userRouters
+  .route("/:slug/rank")
+  .put(validateSlugAndRoleToken, updateUserRankController);
 
 export default userRouters;
