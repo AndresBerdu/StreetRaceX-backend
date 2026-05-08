@@ -1,9 +1,9 @@
 import type { Category } from "../../domain/interfaces/Category.js";
-import type { ICategoryRepository } from "../../domain/interfaces/ports/CategoryRepository.ts";
 
 import { v4 as uuidv4 } from "uuid";
 import { CategoryModel } from "./CategoryModel.ts";
 import { getRepository } from "fireorm";
+import type { ICategoryRepository } from "../../domain/interfaces/ICategoryRepositoy.js";
 
 const categoryRepository = getRepository(CategoryModel);
 

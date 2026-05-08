@@ -5,12 +5,12 @@ import { get_categories } from "../../application/getCategory.ts";
 import { get_category_by_id } from "../../application/getCategoryById.ts";
 import { update_category_by_id } from "../../application/updatedCategoryById.ts";
 import { delete_category_by_id } from "../../application/deleteCategoryById.ts";
-import {createCategorySchema, updateCategorySchema} from "../../domain/schemas/CategoryRepository.ts";
 
 import { handleResponse } from "../../../main/infrastructure/middlewares/handleResponseMiddleware.ts";
 
 import { fireOrmCategoryRepository } from "../firebase/fireOrmCategoryRepository.ts";
 import type { Category } from "../../domain/interfaces/Category.ts";
+import { createCategorySchema, updateCategorySchema } from "../../domain/interfaces/CategoryRepository.ts";
 
 /* Repository */
 const categoryRepository = fireOrmCategoryRepository();
