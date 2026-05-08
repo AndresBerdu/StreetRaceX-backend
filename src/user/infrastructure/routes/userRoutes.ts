@@ -21,6 +21,7 @@ import upload from "../../../main/infrastructure/config/multerConfiguration.ts";
 import { uploadErrorHandler } from "../../../main/infrastructure/middlewares/multer/uploadErrorHandleMiddleware.ts";
 import { validateSlugAndRoleToken } from "../../../auth/infrastructure/middlewares/token/validateRoleAndSlugTokenMiddleware.ts";
 import { validateJsonContentType } from "../../../main/infrastructure/middlewares/multer/validateJsonContetTypeMiddleware.ts";
+import { updateUserRankController } from "../controllers/notificationController.ts";
 
 const userRouters: Router = Router();
 
@@ -83,5 +84,8 @@ userRouters
     validateSlugAndRoleToken,
     updateVehiclePhoto,
   );
+
+// User with notification routes
+userRouters.route("/:slug/rank").put(updateUserRankController);
 
 export default userRouters;

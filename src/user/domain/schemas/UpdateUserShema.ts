@@ -7,6 +7,7 @@ export const UpdateUserShema = UserShema.extend({
   id: z.string().optional(),
   slug: z.string().optional(),
   created_at: z.date().optional(),
+  updated_at: z.date().optional(),
 }).partial();
 
 export type UpdateUser = z.infer<typeof UpdateUserShema>;

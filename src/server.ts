@@ -1,13 +1,17 @@
 import dotenv from "dotenv";
 import { createApp } from "./app.ts";
+import http from "http";
+import { initSocket } from "./main/infrastructure/config/configSocket.ts";
 
 /* Configs */
 dotenv.config({ path: "./src/.env" });
 const PORT = parseInt(process.env.PORT!) || 3000;
 
-/* Inizializer App */
-export const app = createApp();
+export const app = createApp();   // aquí exportas la instancia de Express
 
-app.listen(PORT, () => {
+const server = http.createServer(app);
+export const io = initSocket(server); 
+
+server.listen(PORT, () => {
   console.log(`server running on port ${PORT}`);
 });

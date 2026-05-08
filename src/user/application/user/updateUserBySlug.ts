@@ -2,6 +2,7 @@ import { failure, success, type Result } from "../../../main/domain/Result.ts";
 import type { User } from "../../domain/interfaces/User.js";
 import {
   alreadyExist,
+  forbidden,
   notFound,
   unprocessableEntity,
 } from "../../../main/domain/AppError.ts";
@@ -16,13 +17,23 @@ export const update_user_by_slug = (userRepository: IUserRepository) => {
     if (!user) return failure(notFound("user"));
 
     /* Validation if user try to change the user id for other */
-    if (data.id) return failure(unprocessableEntity("Id"));
+    if (data.id) return failure(unprocessableEntity("You cannot update Id"));
 
     /* Validation if user try to change the user slug for other */
-    if (data.slug) return failure(unprocessableEntity("Slug"));
+    if (data.slug)
+      return failure(unprocessableEntity("You cannot update slug"));
 
     /* Validation if user try to change the date user creation for other */
-    if (data.created_at) return failure(unprocessableEntity("Date"));
+    if (data.created_at)
+      return failure(unprocessableEntity("You cannot update created_at"));
+
+    /* Validation if user try to change the date user update for other */
+    if (data.updated_at)
+      return failure(unprocessableEntity("You cannot update updated_at"));
+
+    /* Validation if user try to rank for other */
+    if (data.rank && user.role === "racer")
+      return failure(forbidden("You cannot update rank"));
 
     /* Validation if the user try to create a new user with one username equal anther user */
     if (data.username) {
