@@ -1,8 +1,8 @@
 import express, { type Application } from "express";
+import "./main/infrastructure/config/firebaseAdmin.ts";
 import morgan from "morgan";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import "./main/infrastructure/config/firebaseAdmin.ts";
 import router from "./main/infrastructure/routes/appRouter.ts";
 
 /* Function for create a App express */

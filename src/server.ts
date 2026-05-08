@@ -5,7 +5,7 @@ import { initSocket } from "./main/infrastructure/config/configSocket.ts";
 
 /* Configs */
 dotenv.config({ path: "./src/.env" });
-const PORT = parseInt(process.env.PORT!) || 3000;
+const PORT = parseInt(process.env.PORT!) || 8000;
 
 export const app = createApp();   // aquí exportas la instancia de Express
 

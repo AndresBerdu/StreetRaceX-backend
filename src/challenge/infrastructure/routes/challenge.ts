@@ -1,46 +1,32 @@
 import { Router } from "express";
 
+import {
+  acceptChallengeController,
+  cancelChallengeController,
+  completeChallengeController,
+  createChallengeController,
+  rejectChallengeController,
+  startChallengeController,
+} from "../controllers/challengeController.ts";
 
 const router = Router();
 
 // CREATE
-router.post("/", async (req, res) => {
-  const result = await create_challenge(
-    ChallengeRepository,
-    userFireRepository as any,
-  )(req.body);
-
-  res.status(result.statusCode).json(result);
-});
+router.post("/", createChallengeController);
 
 // ACCEPT
-router.patch("/:id/accept", async (req, res) => {
-  const result = await accept_challenge(ChallengeRepository)(req.params.id);
-  res.status(result.statusCode).json(result);
-});
+router.patch("/:id/accept", acceptChallengeController);
 
 // REJECT
-router.patch("/:id/reject", async (req, res) => {
-  const result = await reject_challenge(ChallengeRepository)(req.params.id);
-  res.status(result.statusCode).json(result);
-});
+router.patch("/:id/reject", rejectChallengeController);
 
 // CANCEL
-router.patch("/:id/cancel", async (req, res) => {
-  const result = await cancel_challenge(ChallengeRepository)(req.params.id);
-  res.status(result.statusCode).json(result);
-});
+router.patch("/:id/cancel", cancelChallengeController);
 
 // START
-router.patch("/:id/start", async (req, res) => {
-  const result = await start_challenge(ChallengeRepository)(req.params.id);
-  res.status(result.statusCode).json(result);
-});
+router.patch("/:id/start", startChallengeController);
 
 // COMPLETE
-router.patch("/:id/complete", async (req, res) => {
-  const result = await complete_challenge(ChallengeRepository)(req.params.id);
-  res.status(result.statusCode).json(result);
-});
+router.patch("/:id/complete", completeChallengeController);
 
 export default router;

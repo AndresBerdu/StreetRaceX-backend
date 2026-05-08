@@ -6,6 +6,7 @@ export const UpdateVehicleShema = VehicleSchema.extend({
   user_id: z.string().optional(),
   slug: z.string().optional(),
   create_at: z.date().optional(),
+  active: z.boolean().optional(),
 }).partial();
 
 export type UpdateVehicle = z.infer<typeof UpdateVehicleShema>;

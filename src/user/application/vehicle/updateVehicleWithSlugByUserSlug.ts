@@ -35,29 +35,48 @@ export const update_vehicle_with_slug_by_user_slug = (
       );
     }
 
-    if (!data.vehicle_type || !data.plate) {
-      return failure(
-        unprocessableEntity(
-          "You must send both vehicle_type and plate to update a vehicle with plate",
-        ),
-      );
-    }
+    if (data.vehicle_type !== undefined || data.plate !== undefined) {
+      if (!data.vehicle_type || !data.plate) {
+        return failure(
+          unprocessableEntity(
+            "You must send both vehicle_type and plate to update a vehicle with plate",
+          ),
+        );
+      }
 
-    if (typeof data.plate !== "string") {
-      return failure(unprocessableEntity("Plate must be a string"));
-    }
+      if (typeof data.plate !== "string") {
+        return failure(unprocessableEntity("Plate must be a string"));
+      }
 
-    if (data.vehicle_type !== "car" && data.vehicle_type !== "motorcycle") {
-      return failure(
-        unprocessableEntity(
-          "Vehicles with plate must be of type 'car' or 'motorcycle'",
-        ),
-      );
+      if (data.vehicle_type !== "car" && data.vehicle_type !== "motorcycle") {
+        return failure(
+          unprocessableEntity(
+            "Vehicles with plate must be of type 'car' or 'motorcycle'",
+          ),
+        );
+      }
     }
 
     if (data.slug || data.id || data.user_id || data.create_at) {
       return failure(
         forbidden("you cannot change the fields slug, id, user_id or"),
+      );
+    }
+
+    if (data.active === true) {
+      const allVehicles = await userRepository.get_vehicles_by_user_slug(
+        vehicleExist.slug,
+      );
+
+      await Promise.all(
+        allVehicles
+          .filter((v) => v.active && v.slug !== vehicleExist.slug)
+          .map((v) =>
+            userRepository.update_vehicle_with_slug_by_user_slug(slug, v.slug, {
+              ...v,
+              active: false,
+            }),
+          ),
       );
     }
 
