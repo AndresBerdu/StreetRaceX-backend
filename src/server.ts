@@ -1,7 +1,8 @@
 import dotenv from "dotenv";
 import { createApp } from "./app.ts";
 
-/* 🔥 DEBUG GLOBAL */
+
+/* DEBUG GLOBAL */
 process.on("uncaughtException", (err) => {
   console.error("UNCAUGHT EXCEPTION:", err);
 });
@@ -12,7 +13,7 @@ process.on("unhandledRejection", (err) => {
 
 /* Configs */
 dotenv.config({ path: "./src/.env" });
-const PORT = parseInt(process.env.PORT!) || 3000;
+const PORT = parseInt(process.env.PORT!) || 8000;
 
 /* Inicializer App */
 export const app = createApp();

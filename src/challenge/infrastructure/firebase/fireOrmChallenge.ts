@@ -1,22 +1,46 @@
 import { getRepository } from "fireorm";
-import type { IChallengeRepository } from "../../domain/interfaces/ports/IChallengeRepository.js";
-import { ChallengeModel } from "./ChallengeModel.ts";
+import { ChallengeModel } from "../firebase/ChallengeModel.ts";
+import type { IChallengeRepository } from "../../domain/interfaces/ports/IChallengeRepository.d.ts";
 import { v4 as uuidv4 } from "uuid";
 
-const challengeRepository = getRepository(ChallengeModel);
+const repository = getRepository(ChallengeModel);
 
-export const fireOrmChallenge = (): IChallengeRepository => ({
-  async get_challge_by_slug(id) {
-    return await challengeRepository.findById(id);
+export const ChallengeRepository: IChallengeRepository = {
+  async getById(id) {
+    try {
+      return await repository.findById(id);
+    } catch {
+      return null;
+    }
   },
 
-  async create_challenge(challenge) {
-    const challengeModel = new ChallengeModel();
+  async createChallenge(data) {
+    const model = new ChallengeModel();
 
-    Object.assign(challengeModel, challenge);
+    Object.assign(model, data);
 
-    challengeModel.id = uuidv4();
+    model.id = uuidv4();
+    model.created_at = new Date();
+    model.updated_at = new Date();
 
-    return await challengeRepository.create(challengeModel);
+    return await repository.create(model);
   },
-});
+
+  async updateChallenge(id, data) {
+    try {
+      const existing = await repository.findById(id);
+      if (!existing) return null;
+
+      Object.assign(existing, data, {
+        updated_at: new Date(),
+      });
+
+      return await repository.update(existing);
+    } catch {
+      return null;
+    }
+  },
+  findById: function (id: string): Promise<Challenge | null> {
+    throw new Error("Function not implemented.");
+  }
+};

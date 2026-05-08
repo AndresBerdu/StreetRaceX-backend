@@ -1,43 +1,47 @@
 import type { Request, Response } from "express";
-import { fireOrmChallenge } from "../firebase/fireOrmChallenge.ts";
-import type { Challenge } from "../../domain/interfaces/Challenge.js";
+
+import { challengeRepository } from "../firebase/fireOrmChallenge";
+import { userFireRepository } from "../../../user/infrastructure/firebase/fireOrmUserRepository.ts";
+
 import { create_challenge } from "../../application/createChallenge.ts";
-import { handleResponse } from "../../../main/infrastructure/middlewares/handleResponseMiddleware.ts";
-import { fireOrmUserRepository } from "../../../user/infrastructure/firebase/fireOrmUserRepository.ts";
+import { accept_challenge } from "../../application/acceptedChallenge.ts";
+import { reject_challenge } from "../../application/rejectChallenge.ts";
+import { cancel_challenge } from "../../application/cancelChallenge.ts";
+import { start_challenge } from "../../application/startChallenge.ts";
+import { complete_challenge } from "../../application/completeChallenge.ts";
 
-const challengeRepository = fireOrmChallenge();
-const userRepository = fireOrmUserRepository();
+// CREATE
+export const createChallengeController = async (req: Request, res: Response) => {
+  const result = await create_challenge(challengeRepository, userFireRepository as any)(req.body);
+  res.status(result.statusCode).json(result);
+};
 
-export const createChallenge = async (req: Request, res: Response) => {
-  try {
-    const data = req.body;
+// ACCEPT
+export const acceptChallengeController = async (req: Request, res: Response) => {
+  const result = await accept_challenge(challengeRepository)((req.params as any).id);
+  res.status(result.statusCode).json(result);
+};
 
-    const challengeData: Challenge = {
-      ...data,
-      winner: null,
-      state: "pending",
-      created_at: new Date(),
-      updated_at: new Date(),
-    };
+// REJECT
+export const rejectChallengeController = async (req: Request, res: Response) => {
+  const result = await reject_challenge(challengeRepository)((req.params as any).id);
+  res.status(result.statusCode).json(result);
+};
 
-    const result = await create_challenge(
-      challengeRepository,
-      userRepository,
-    )(challengeData);
+// CANCEL
+export const cancelChallengeController = async (req: Request, res: Response) => {
+  const result = await cancel_challenge(challengeRepository)((req.params as any).id);
+  res.status(result.statusCode).json(result);
+};
 
-    handleResponse(res, result);
-  } catch (error) {
-    // Zod validation error
-    if ((error as any)?.constructor?.name === "ZodError") {
-      return res.status(422).json({
-        ok: false,
-        error: (error as any).issues,
-      });
-    }
+// START
+export const startChallengeController = async (req: Request, res: Response) => {
+  const result = await start_challenge(challengeRepository)((req.params as any).id);
+  res.status(result.statusCode).json(result);
+};
 
-    return res.status(500).json({
-      ok: false,
-      error: (error as Error).message,
-    });
-  }
+// COMPLETE
+export const completeChallengeController = async (req: Request, res: Response) => {
+  const result = await complete_challenge(challengeRepository)((req.params as any).id);
+  res.status(result.statusCode).json(result);
 };

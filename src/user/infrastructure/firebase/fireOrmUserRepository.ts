@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import { VehicleModel } from "../../../vehicle/infrastructure/firebase/VehicleModel.ts";
 import type { IUserRepository } from "../../domain/interfaces/ports/IUserRepository.js";
 
-const userFireRepository = getRepository(UserModel);
+export const userFireRepository = getRepository(UserModel);
 const vehicleFireRepository = getRepository(VehicleModel);
 
 export const fireOrmUserRepository = (): IUserRepository => ({
