@@ -5,17 +5,14 @@ import { validateRoleToken } from "../../../auth/infrastructure/middlewares/toke
 
 const categoryRouters: Router = Router();
 
-//Get all categories
 categoryRouters.get("/", getCategories);
 
-// Create category
 categoryRouters.post(
   "/",
   validateRoleToken,
   createCategory
 );
 
-// Routes with ID
 categoryRouters
   .route("/:id")
   .get(getCategoryById)
