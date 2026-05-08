@@ -1,5 +1,4 @@
 import { Collection } from "fireorm";
-import type { State, Type_race } from "../../domain/interfaces/Challenge.js";
 
 @Collection("challenge")
 export class ChallengeModel {

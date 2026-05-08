@@ -2,6 +2,7 @@ import { getRepository } from "fireorm";
 import { ChallengeModel } from "../firebase/ChallengeModel.ts";
 import type { IChallengeRepository } from "../../domain/interfaces/ports/IChallengeRepository.d.ts";
 import { v4 as uuidv4 } from "uuid";
+import type { Challenge } from "../../domain/interfaces/Challenge.js";
 
 const repository = getRepository(ChallengeModel);
 
@@ -40,6 +41,7 @@ export const ChallengeRepository: IChallengeRepository = {
       return null;
     }
   },
+
   findById: function (id: string): Promise<Challenge | null> {
     throw new Error("Function not implemented.");
   }
