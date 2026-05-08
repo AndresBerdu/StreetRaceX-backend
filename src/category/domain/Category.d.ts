@@ -1,5 +1,5 @@
 export interface CompetitionCategory {
-  id: string;
+  id?: string;
   name: string;
   description: string;
   active: boolean;

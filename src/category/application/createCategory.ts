@@ -6,7 +6,7 @@ import { alreadyExist } from "../../main/domain/AppError.ts";
 
 export const create_category = (categoryRepository: ICategoryRepository) => {
   console.log("CREATE CATEGORY HIT");
-  return async (data: Omit<Category, "id">): Promise<Result<Category>> => {
+  return async (data: Category): Promise<Result<Category>> => {
 
     const categoryExist = await categoryRepository.get_category_by_name(data.name);
 

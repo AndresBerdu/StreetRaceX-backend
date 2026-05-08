@@ -10,6 +10,7 @@ import {createCategorySchema, updateCategorySchema} from "../../domain/schemas/C
 import { handleResponse } from "../../../main/infrastructure/middlewares/handleResponseMiddleware.ts";
 
 import { fireOrmCategoryRepository } from "../firebase/fireOrmCategoryRepository.ts";
+import type { Category } from "../../domain/interfaces/Category.ts";
 
 /* Repository */
 const categoryRepository = fireOrmCategoryRepository();
@@ -52,7 +53,7 @@ export const createCategory = async (req: Request, res: Response) => {
   try {
     const data = createCategorySchema.parse(req.body);
 
-    const categoryData = {
+    const categoryData: Category = {
       ...data,
       description: data.description ?? "",
       active: true,
