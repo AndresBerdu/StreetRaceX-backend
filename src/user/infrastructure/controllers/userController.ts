@@ -6,8 +6,6 @@ import { UserShema } from "../../domain/schemas/UserShema.ts";
 import { generateSlug } from "../../../main/infrastructure/utils/generateSlug.ts";
 import { get_user_by_slug } from "../../application/user/getUserBySlug.ts";
 import { delete_user_by_slug } from "../../application/user/deleteUserBySlug.ts";
-import { update_user_by_slug } from "../../application/user/updateUserBySlug.ts";
-import { handleResponse } from "../../../main/infrastructure/middlewares/handleResponseMiddleware.ts";
 import { UpdateUserShema } from "../../domain/schemas/UpdateUserShema.ts";
 import { fireOrmUserRepository } from "../firebase/fireOrmUserRepository.ts";
 import { encryptPassword } from "../../../main/infrastructure/security/encryptPassword.ts";
@@ -15,6 +13,8 @@ import { uploadImage } from "../../../main/infrastructure/utils/uploadImage.ts";
 import { removeUndefinedBoby } from "../../../main/infrastructure/utils/removeUndefinedBoby.ts";
 import { updateImage } from "../../../main/infrastructure/utils/updateImage.ts";
 import type { ZodError } from "zod/v4";
+import { handleResponse } from "../../../main/infrastructure/middlewares/handleResponseMiddleware.ts";
+import { update_user_by_slug } from "../../application/user/updateUserBySlug.ts";
 
 /* Repository from fireOrmRepository */
 const userFireRepository = fireOrmUserRepository();
@@ -81,10 +81,22 @@ export const getUserBySlug = async (req: Request, res: Response) => {
 */
 export const createUser = async (req: Request, res: Response) => {
   try {
-    req.body.locality = JSON.parse(req.body.locality);
+    if (typeof req.body.locality === "string") {
+      req.body.locality = JSON.parse(req.body.locality);
+    }
     /* Fistly the object locality is convert to object */
 
-    const { username, password, email, locality } = UserShema.parse(req.body);
+    const {
+      username,
+      password,
+      email,
+      locality,
+      role,
+      rank,
+      victories,
+      defeats,
+      consecutive_victories,
+    } = UserShema.parse(req.body);
 
     const userData: User = {
       username,
@@ -94,11 +106,11 @@ export const createUser = async (req: Request, res: Response) => {
       profile_photo: null,
       public_id_photo: null,
       slug: generateSlug("user"),
-      role: "racer",
-      rank: "D",
-      victories: 0,
-      defeats: 0,
-      consecutive_victories: 0,
+      rank,
+      role,
+      victories,
+      defeats,
+      consecutive_victories,
       state: "active",
       updated_at: new Date(),
       created_at: new Date(),
@@ -121,13 +133,6 @@ export const createUser = async (req: Request, res: Response) => {
 
     handleResponse(res, result);
   } catch (error) {
-    if (typeof req.body.locality !== "string") {
-      return res.status(422).json({
-        ok: false,
-        error: "locality is require",
-      });
-    }
-
     if ((error as ZodError)?.constructor?.name === "ZodError") {
       return res.status(422).json({
         ok: false,

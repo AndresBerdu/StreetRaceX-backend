@@ -35,13 +35,22 @@ export const update_vehicle_with_slug_by_user_slug = (
       );
     }
 
-    if (
-      (data.vehicle_type && !data.plate) ||
-      (!data.vehicle_type && data.plate)
-    ) {
+    if (!data.vehicle_type || !data.plate) {
       return failure(
         unprocessableEntity(
-          "You cannot update one vehicle witout plate if you don't change vehicle type with plate or you don't send one plate with vehicle plate",
+          "You must send both vehicle_type and plate to update a vehicle with plate",
+        ),
+      );
+    }
+
+    if (typeof data.plate !== "string") {
+      return failure(unprocessableEntity("Plate must be a string"));
+    }
+
+    if (data.vehicle_type !== "car" && data.vehicle_type !== "motorcycle") {
+      return failure(
+        unprocessableEntity(
+          "Vehicles with plate must be of type 'car' or 'motorcycle'",
         ),
       );
     }

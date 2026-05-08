@@ -14,7 +14,7 @@ export const sign_in_session = (
   userRepository: IUserRepository,
 ) => {
   return async (userCredentials: UserCredentials): Promise<Result<User>> => {
-    /* Validation if the user not exist */
+    /* validacion if the user does not exist */
     const userExist = await userRepository.get_user_by_username(
       userCredentials.username,
     );
@@ -32,6 +32,6 @@ export const sign_in_session = (
 
     const user = await authRepository.sign_in_session(userCredentials);
 
-    return success(200, user, "user logued");
+    return success(200, user, "session started");
   };
 };

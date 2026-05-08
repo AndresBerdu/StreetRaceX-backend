@@ -51,8 +51,6 @@ describe("Test for create one vehicle for one user", () => {
       .field("modifications", "wheels upgrated")
       .set("Cookie", cookies);
 
-    console.log(res.body)
-
     plate = res.body.data.plate;
 
     /* Status code response */
@@ -199,8 +197,8 @@ describe("Test for create one vehicle for one user", () => {
       .field("year", "2022")
       .field("color", "white")
       .field("plate", "32213-fadfe")
-      .field("modifications", "wheels upgrated");
-
+      .field("modifications", "wheels upgrated")
+      .set("Cookie", cookies);
     /* Status code response */
     expect(res.status).toBe(403);
 

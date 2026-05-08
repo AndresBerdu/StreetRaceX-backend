@@ -11,7 +11,7 @@ export const validateToken = (
   if (!accessToken) {
     return res.status(401).json({
       ok: false,
-      error: "user not authorizated",
+      error: "User not authorizated",
     });
   }
 
@@ -21,7 +21,7 @@ export const validateToken = (
   } catch (error) {
     res.status(401).json({
       ok: false,
-      error: "user not authorizated, token invalid or expired",
+      error: "User not authorizated, token invalid or expired",
     });
   }
 };

@@ -1,14 +1,12 @@
 import type { Request, Response } from "express";
 import { create_vehicle_by_user_slug } from "../../application/vehicle/createVehicleByUserSlug.ts";
 import { VehicleSchema } from "../../../vehicle/domain/schemas/VehicleShema.ts";
-
 import { fireOrmVehicleRepository } from "../../../vehicle/infrastructure/firebase/fireOrmVehicleRepository.ts";
 import { get_vehicles_by_user_slug } from "../../application/vehicle/getVehiclesByUserSlug.ts";
 import { update_vehicle_with_plate_by_user_slug } from "../../application/vehicle/updateVehicleWithPlateByUserSlug.ts";
 import { fireOrmUserRepository } from "../firebase/fireOrmUserRepository.ts";
 import { handleResponse } from "../../../main/infrastructure/middlewares/handleResponseMiddleware.ts";
 import { generateSlug } from "../../../main/infrastructure/utils/generateSlug.ts";
-import { uploadImage } from "../../../main/infrastructure/utils/uploadImage.ts";
 import { update_vehicle_with_slug_by_user_slug } from "../../application/vehicle/updateVehicleWithSlugByUserSlug.ts";
 import { updateImage } from "../../../main/infrastructure/utils/updateImage.ts";
 import { UpdateVehicleShema } from "../../../vehicle/domain/schemas/UpdateVehicleShema.ts";

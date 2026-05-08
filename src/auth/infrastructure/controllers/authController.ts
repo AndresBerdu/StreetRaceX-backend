@@ -18,10 +18,12 @@ import { getPayloadToken } from "../util/getPayloadToken.ts";
 
 /* Repositories from fire ORM */
 const authFireRepository = fireOrmAuthRepository();
-const authRedisRepository = redisAuthRepository();
 const userFireRepository = fireOrmUserRepository();
 
-/* Controller for Login */
+/* Respository from redis */
+const authRedisRepository = redisAuthRepository();
+
+/* Controller for login session */
 export const signInSession = async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
@@ -55,6 +57,7 @@ export const signInSession = async (req: Request, res: Response) => {
       locality: locality as Locality,
       role,
     });
+
     const refreshToken = generateRefreshToken({ slug, username, role });
 
     handleResponse(res, result, [
@@ -82,8 +85,10 @@ export const signInSession = async (req: Request, res: Response) => {
 /* Controller for register a new user */
 export const signUpSession = async (req: Request, res: Response) => {
   try {
-    /* Fistly the object locality is convert to object */
-    req.body.locality = JSON.parse(req.body.locality);
+    /* Fistly the object locality is convert to object if you use form data */
+    if (typeof req.body.locality === "string") {
+      req.body.locality = JSON.parse(req.body.locality);
+    }
 
     const { username, password, email, locality } = UserShema.parse(req.body);
 
@@ -123,7 +128,7 @@ export const signUpSession = async (req: Request, res: Response) => {
       result.data.public_id_photo = imageUrl?.publicId ?? null;
     }
 
-    /* Cration of tokens with role */
+    /* creation for default users */
     const token = generateToken({
       username,
       email,

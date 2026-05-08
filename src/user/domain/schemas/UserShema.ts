@@ -18,4 +18,9 @@ export const UserShema = z.object({
       "password must have min 8 character, 1 uppercase, 1 number and one especial character",
     ),
   locality: LocalitySchema,
+  role: z.enum(["admin", "racer"]),
+  rank: z.enum(["S", "A", "B", "C", "D"]),
+  victories: z.number(),
+  defeats: z.number(),
+  consecutive_victories: z.number(),
 });

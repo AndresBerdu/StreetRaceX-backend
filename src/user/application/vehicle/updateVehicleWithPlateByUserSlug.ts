@@ -30,11 +30,36 @@ export const update_vehicle_with_plate_by_user_slug = (
 
     if (!vehicleExist) return failure(notFound("Vehicle"));
 
-    if (plate === null) return failure(unprocessableEntity("You cannot update vehicles without plate"))
+    if (data.vehicle_type === undefined || data.plate === undefined) {
+      return failure(
+        unprocessableEntity(
+          "You must send both vehicle_type and plate to update a vehicle to skate_board",
+        ),
+      );
+    }
 
+    // Si la placa no es null, error
+    if (data.plate !== null) {
+      return failure(
+        unprocessableEntity(
+          "To update a vehicle without plate you must send plate as null",
+        ),
+      );
+    }
+
+    // Si el tipo no es skate_board, error
+    if (data.vehicle_type !== "skate_board") {
+      return failure(
+        unprocessableEntity(
+          "Vehicles without plate must be of type 'skate_board'",
+        ),
+      );
+    }
     if (data.slug || data.id || data.user_id || data.create_at) {
       return failure(
-        forbidden("you cannot change the fields slug, id, user_id or"),
+        unprocessableEntity(
+          "you cannot change the fields slug, id, user_id or",
+        ),
       );
     }
 
