@@ -16,6 +16,6 @@ router.use("/api/auth", authRouter);
 router.use("/api/users", validateToken, userRouters);
 router.use("/api/vehicles", validateToken, vehicleRoutes);
 router.use("/api/categories", validateToken, categoryRouters);
-router.use("/api/categories", validateToken, challengesRoutes);
+router.use("/api/challenges", validateToken, challengesRoutes);
 
 export default router;
