@@ -4,12 +4,12 @@ import type { IChallengeRepository } from "../../domain/interfaces/ports/IChalle
 import { v4 as uuidv4 } from "uuid";
 import type { Challenge } from "../../domain/interfaces/Challenge.js";
 
-const repository = getRepository(ChallengeModel);
+const getRepo = () => getRepository(ChallengeModel);
 
 export const ChallengeRepository: IChallengeRepository = {
   async getById(id) {
     try {
-      return await repository.findById(id);
+      return await getRepo().findById(id);
     } catch {
       return null;
     }
@@ -24,19 +24,19 @@ export const ChallengeRepository: IChallengeRepository = {
     model.created_at = new Date();
     model.updated_at = new Date();
 
-    return await repository.create(model);
+    return await getRepo().create(model);
   },
 
   async updateChallenge(id, data) {
     try {
-      const existing = await repository.findById(id);
+      const existing = await getRepo().findById(id);
       if (!existing) return null;
 
       Object.assign(existing, data, {
         updated_at: new Date(),
       });
 
-      return await repository.update(existing);
+      return await getRepo().update(existing);
     } catch {
       return null;
     }
@@ -44,5 +44,5 @@ export const ChallengeRepository: IChallengeRepository = {
 
   findById: function (id: string): Promise<Challenge | null> {
     throw new Error("Function not implemented.");
-  }
+  },
 };

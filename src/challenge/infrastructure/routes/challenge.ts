@@ -1,7 +1,7 @@
 import { Router } from "express";
 
 import { ChallengeRepository } from "../firebase/fireOrmChallenge.ts";
-import { userFireRepository } from "../../../user/infrastructure/firebase/fireOrmUserRepository.ts";
+import { fireOrmUserRepository } from "../../../user/infrastructure/firebase/fireOrmUserRepository.ts";
 
 // use cases (snake_case)
 import { create_challenge } from "../../application/createChallenge.ts";
@@ -17,7 +17,7 @@ const router = Router();
 router.post("/", async (req, res) => {
   const result = await create_challenge(
     ChallengeRepository,
-    userFireRepository as any,
+    fireOrmUserRepository() as any, // ✅ lazy, dentro del handler
   )(req.body);
 
   res.status(result.statusCode).json(result);

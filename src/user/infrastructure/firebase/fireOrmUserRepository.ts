@@ -4,120 +4,124 @@ import { v4 as uuidv4 } from "uuid";
 import { VehicleModel } from "../../../vehicle/infrastructure/firebase/VehicleModel.ts";
 import type { IUserRepository } from "../../domain/interfaces/ports/IUserRepository.js";
 
-export const userFireRepository = getRepository(UserModel);
-const vehicleFireRepository = getRepository(VehicleModel);
+export const fireOrmUserRepository = (): IUserRepository => {
+  const userFireRepository = getRepository(UserModel);
+  const vehicleFireRepository = getRepository(VehicleModel);
 
-export const fireOrmUserRepository = (): IUserRepository => ({
-  /* FUNCTIONS WITHOUT PARM */
+  return {
+    async count_users() {
+      const users = await userFireRepository.find();
+      return users.length;
+    },
 
-  async count_users() {
-    const users = await userFireRepository.find();
-    return users.length;
-  },
+    async get_user_by_username(username) {
+      return await userFireRepository
+        .whereEqualTo("username", username)
+        .findOne();
+    },
 
-  async get_user_by_username(username) {
-    return await userFireRepository
-      .whereEqualTo("username", username)
-      .findOne();
-  },
+    async get_user_by_email(email) {
+      return await userFireRepository.whereEqualTo("email", email).findOne();
+    },
 
-  async get_user_by_email(email) {
-    return await userFireRepository.whereEqualTo("email", email).findOne();
-  },
+    async get_users(page, size) {
+      const skip = (page - 1) * size;
 
-  async get_users(page, size) {
-    const skip = (page - 1) * size;
+      const users = await userFireRepository
+        .orderByAscending("created_at")
+        .limit(skip + size)
+        .find();
 
-    const users = await userFireRepository
-      .orderByAscending("created_at")
-      .limit(skip + size)
-      .find();
+      return users.slice(skip, skip + size);
+    },
 
-    return users.slice(skip, skip + size);
-  },
+    async create_user(user) {
+      const userModel = new UserModel();
 
-  async create_user(user) {
-    const userModel = new UserModel();
+      Object.assign(userModel, user);
 
-    Object.assign(userModel, user);
+      userModel.id = uuidv4();
 
-    userModel.id = uuidv4();
+      return await userFireRepository.create(userModel);
+    },
 
-    return await userFireRepository.create(userModel);
-  },
+    async get_user_by_id(id) {
+      return userFireRepository.findById(id);
+    },
 
-  /* FUNCTIONS WITH USER SLUG */
+    async get_user_by_slug(slug) {
+      const user = await userFireRepository
+        .whereEqualTo("slug", slug)
+        .findOne();
 
-  async get_user_by_id(id) {
-    return userFireRepository.findById(id);
-  },
+      return user!;
+    },
 
-  async get_user_by_slug(slug) {
-    const user = await userFireRepository.whereEqualTo("slug", slug).findOne();
+    async update_user_by_slug(slug, data) {
+      const user = await userFireRepository
+        .whereEqualTo("slug", slug)
+        .findOne();
 
-    return user!;
-  },
+      const { locality, ...rest } = data;
 
-  async update_user_by_slug(slug, data) {
-    const user = await userFireRepository.whereEqualTo("slug", slug).findOne();
+      Object.assign(user!, rest);
 
-    const { locality, ...rest } = data;
+      if (locality) {
+        user!.locality = {
+          ...user!.locality,
+          ...locality,
+        };
+      }
 
-    Object.assign(user!, rest);
+      user!.updated_at = new Date();
 
-    if (locality) {
-      user!.locality = {
-        ...user!.locality,
-        ...locality,
-      };
-    }
+      return await userFireRepository.update(user!);
+    },
 
-    user!.updated_at = new Date();
+    async delete_user_by_slug(slug) {
+      const user = await userFireRepository
+        .whereEqualTo("slug", slug)
+        .findOne();
 
-    return await userFireRepository.update(user!);
-  },
+      return await userFireRepository.delete(user?.id!);
+    },
 
-  async delete_user_by_slug(slug) {
-    const user = await userFireRepository.whereEqualTo("slug", slug).findOne();
+    async get_vehicles_by_user_slug(slug) {
+      const user = await this.get_user_by_slug(slug);
 
-    return await userFireRepository.delete(user?.id!);
-  },
+      return await vehicleFireRepository
+        .whereEqualTo("user_id", user?.id!)
+        .find();
+    },
 
-  async get_vehicles_by_user_slug(slug) {
-    const user = await this.get_user_by_slug(slug);
+    async create_vehicle_by_user_slug(_slug, vehicle) {
+      const vehicleModel = new VehicleModel();
 
-    return await vehicleFireRepository
-      .whereEqualTo("user_id", user?.id!)
-      .find();
-  },
+      Object.assign(vehicleModel, vehicle);
 
-  async create_vehicle_by_user_slug(_slug, vehicle) {
-    const vehicleModel = new VehicleModel();
+      vehicleModel.id = uuidv4();
 
-    Object.assign(vehicleModel, vehicle);
+      return await vehicleFireRepository.create(vehicleModel);
+    },
 
-    vehicleModel.id = uuidv4();
+    async update_vehicle_with_plate_by_user_slug(_slug, plate, data) {
+      const vehicle = await vehicleFireRepository
+        .whereEqualTo("plate", plate)
+        .findOne();
 
-    return await vehicleFireRepository.create(vehicleModel);
-  },
+      Object.assign(vehicle!, data);
 
-  async update_vehicle_with_plate_by_user_slug(_slug, plate, data) {
-    const vehicle = await vehicleFireRepository
-      .whereEqualTo("plate", plate)
-      .findOne();
+      return await vehicleFireRepository.update(vehicle!);
+    },
 
-    Object.assign(vehicle!, data);
+    async update_vehicle_with_slug_by_user_slug(_slug, vehicle_slug, data) {
+      const vehicle = await vehicleFireRepository
+        .whereEqualTo("slug", vehicle_slug)
+        .findOne();
 
-    return await vehicleFireRepository.update(vehicle!);
-  },
+      Object.assign(vehicle!, data);
 
-  async update_vehicle_with_slug_by_user_slug(_slug, vehicle_slug, data) {
-    const vehicle = await vehicleFireRepository
-      .whereEqualTo("slug", vehicle_slug)
-      .findOne();
-
-    Object.assign(vehicle!, data);
-
-    return await vehicleFireRepository.update(vehicle!);
-  },
-});
+      return await vehicleFireRepository.update(vehicle!);
+    },
+  };
+};

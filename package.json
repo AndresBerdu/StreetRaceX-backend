@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --watch src --exec node --loader ts-node/esm ./src/server.ts",
+    "dev": "tsx watch ./src/server.ts",
     "build": "npx tsc",
     "start": "node build/app.js",
     "test": "npx vitest run"

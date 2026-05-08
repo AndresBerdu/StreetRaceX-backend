@@ -2,11 +2,16 @@ import express, { type Application } from "express";
 import morgan from "morgan";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import "./main/infrastructure/config/firebaseAdmin.ts";
-import router from "./main/infrastructure/routes/appRouter.ts";
+import { initFirebase } from "./main/infrastructure/config/firebaseAdmin.ts";
 
 /* Function for create a App express */
-export const createApp = () => {
+export const createApp = async () => {
+  // ✅ Firebase se inicializa PRIMERO, antes de cargar cualquier repositorio
+  initFirebase();
+
+  // ✅ Import dinámico: se ejecuta DESPUÉS de initFirebase()
+  const { default: router } = await import("./main/infrastructure/routes/appRouter.ts");
+
   const app: Application = express();
 
   /* Middlewares */
