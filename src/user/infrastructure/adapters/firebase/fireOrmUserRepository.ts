@@ -1,7 +1,7 @@
 import { getRepository } from "fireorm";
 import { UserModel } from "./UserModel.ts";
 import { v4 as uuidv4 } from "uuid";
-import { VehicleModel } from "../../../../vehicle/infrastructure/firebase/VehicleModel.ts";
+import { VehicleModel } from "../../../../vehicle/infrastructure/adapters/firebase/VehicleModel.ts";
 import type { IUserRepository } from "../../../domain/interfaces/ports/IUserRepository.js";
 
 const userFireRepository = getRepository(UserModel);
@@ -109,9 +109,9 @@ export const fireOrmUserRepository = (): IUserRepository =>
       return await vehicleFireRepository.create(vehicleModel);
     },
 
-    async update_vehicle_with_plate_by_user_slug(_slug, plate, data) {
+    async update_vehicle_by_vehicle_slug_by_user_slug(_slug, vehicle_slug, data) {
       const vehicle = await vehicleFireRepository
-        .whereEqualTo("plate", plate)
+        .whereEqualTo("slug", vehicle_slug)
         .findOne();
 
       Object.assign(vehicle!, data);
@@ -123,9 +123,9 @@ export const fireOrmUserRepository = (): IUserRepository =>
       return await vehicleFireRepository.update(vehicle!);
     },
 
-    async delete_vehicle_with_plate_by_user_slug(_slug, plate) {
+    async delete_vehicle_by_vehicle_slug_by_user_slug(_slug, vehicle_slug) {
       const vehicle = await vehicleFireRepository
-        .whereEqualTo("plate", plate)
+        .whereEqualTo("slug", vehicle_slug)
         .findOne();
 
       return await vehicleFireRepository.delete(vehicle?.id!);

@@ -12,6 +12,6 @@ export const get_vehicles_by_user_slug = (userRepository: IUserRepository) => {
 
     const vehicles = await userRepository.get_vehicles_by_user_slug(slug);
 
-    return success(200, vehicles, "vehicle got it");
+    return success(200, vehicles, "vehicles found");
   };
 };

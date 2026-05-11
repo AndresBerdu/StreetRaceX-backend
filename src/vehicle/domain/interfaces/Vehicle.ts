@@ -1,8 +1,14 @@
+export enum VehicleType {
+  CAR = "car",
+  MOTORCYCLE = "motorcycle",
+  SKATE_BOARD = "skate_board",
+}
+
 export type Vehicle = {
   id?: string;
   user_id?: string;
   slug: string;
-  vehicle_type: vehicle_type;
+  vehicle_type: VehicleType;
   brand: string;
   model: string;
   year: number;
@@ -15,4 +21,3 @@ export type Vehicle = {
   created_at: Date;
 };
 
-export type vehicle_type = "car" | "motorcycle" | "skate_board";

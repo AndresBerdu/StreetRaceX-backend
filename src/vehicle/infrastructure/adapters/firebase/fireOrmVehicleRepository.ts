@@ -1,5 +1,5 @@
 import { getRepository } from "fireorm";
-import type { IVehicleRepository } from "../../domain/interfaces/ports/IVehicleRepository.js";
+import type { IVehicleRepository } from "../../../domain/interfaces/ports/IVehicleRepository.js";
 import { VehicleModel } from "./VehicleModel.ts";
 
 const vehicleFireRepository = getRepository(VehicleModel);

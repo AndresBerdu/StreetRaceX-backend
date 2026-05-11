@@ -1,7 +1,8 @@
 import z from "zod";
+import { VehicleType } from "../interfaces/Vehicle.ts";
 
 export const VehicleSchema = z.object({
-  vehicle_type: z.enum(["car", "motorcycle", "skate_board"]),
+  vehicle_type: z.nativeEnum(VehicleType),
   brand: z.string().min(2).max(20),
   model: z.string().min(2).max(50),
   year: z.number().refine((value) => value >= 1000 && value <= 9999, {

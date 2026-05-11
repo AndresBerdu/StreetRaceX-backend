@@ -18,10 +18,13 @@ export interface IUserRepository {
   //Vehicle functions
   get_vehicles_by_user_slug(slug: string): Promise<Vehicle[]>;
   create_vehicle_by_user_slug(slug: string, vehicle: Vehicle): Promise<Vehicle>;
-  update_vehicle_with_plate_by_user_slug(
+  update_vehicle_by_vehicle_slug_by_user_slug(
     slug: string,
-    plate: string,
+    vehicle_slug: string,
     data: Vehicle,
   ): Promise<Vehicle>;
-  delete_vehicle_with_plate_by_user_slug(slug: string, plate: string): void;
+  delete_vehicle_by_vehicle_slug_by_user_slug(
+    slug: string,
+    vehicle_slug: string,
+  ): void;
 }

@@ -1,12 +1,12 @@
 import { Collection } from "fireorm";
-import type { vehicle_type } from "../../domain/interfaces/Vehicle.js";
+import type { VehicleType } from "../../../domain/interfaces/Vehicle.ts";
 
 @Collection("vehicles")
 export class VehicleModel {
   id!: string;
   user_id!: string;
   slug!: string;
-  vehicle_type!: vehicle_type;
+  vehicle_type!: VehicleType;
   brand!: string;
   model!: string;
   year!: number;
