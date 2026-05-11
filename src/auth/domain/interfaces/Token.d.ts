@@ -1,4 +1,4 @@
-import type { Locality } from "../../../user/domain/interfaces/User.js";
+import type { Locality } from "../../../user/domain/interfaces/User.ts";
 
 export type Token = {
   username: string;

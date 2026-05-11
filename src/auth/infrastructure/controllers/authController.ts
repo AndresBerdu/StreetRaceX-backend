@@ -1,6 +1,5 @@
 import type { Request, Response } from "express";
 import { fireOrmAuthRepository } from "../adapters/fireOrmAuthRepository.ts";
-import { fireOrmUserRepository } from "../../../user/infrastructure/firebase/fireOrmUserRepository.ts";
 import { handleResponse } from "../../../main/infrastructure/middlewares/handleResponseMiddleware.ts";
 import { uploadImage } from "../../../main/infrastructure/utils/uploadImage.ts";
 import { encryptPassword } from "../../../main/infrastructure/security/encryptPassword.ts";
@@ -11,10 +10,19 @@ import { refresh_session } from "../../application/refreshSession.ts";
 import { generateRefreshToken, generateToken } from "../util/createToken.ts";
 import { generateSlug } from "../../../main/infrastructure/utils/generateSlug.ts";
 import { UserShema } from "../../../user/domain/schemas/UserShema.ts";
-import type { Locality, User } from "../../../user/domain/interfaces/User.ts";
+
 import { redisAuthRepository } from "../adapters/redisAuthRepository.ts";
 import type { ZodError } from "zod/v4";
 import { getPayloadToken } from "../util/getPayloadToken.ts";
+import type { UserCredentials } from "../../domain/interfaces/UserCrendentials.js";
+import {
+  Rank,
+  Role,
+  State,
+  type Locality,
+  type User,
+} from "../../../user/domain/interfaces/User.ts";
+import { fireOrmUserRepository } from "../../../user/infrastructure/adapters/firebase/fireOrmUserRepository.ts";
 
 /* Repositories from fire ORM */
 const authFireRepository = fireOrmAuthRepository();
@@ -28,7 +36,7 @@ export const signInSession = async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
 
-    const userCredentials = {
+    const userCredentials: UserCredentials = {
       username,
       password,
     };
@@ -100,12 +108,12 @@ export const signUpSession = async (req: Request, res: Response) => {
       profile_photo: null,
       public_id_photo: null,
       slug: generateSlug("user"),
-      rank: "D",
-      role: "racer",
+      rank: Rank.D,
+      role: Role.racer,
       victories: 0,
       defeats: 0,
       consecutive_victories: 0,
-      state: "active",
+      state: State.active,
       updated_at: new Date(),
       created_at: new Date(),
     };
@@ -159,9 +167,7 @@ export const signUpSession = async (req: Request, res: Response) => {
     if ((error as ZodError)?.constructor?.name === "ZodError") {
       return res.status(422).json({
         ok: false,
-        error: (error as ZodError).issues.map((issue) => {
-          return issue.message;
-        }),
+        error: (error as ZodError).issues,
       });
     }
 

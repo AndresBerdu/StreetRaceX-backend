@@ -1,7 +1,7 @@
 import { notFound } from "../../../main/domain/AppError.ts";
 import { failure, success, type Result } from "../../../main/domain/Result.ts";
 import type { IUserRepository } from "../../domain/interfaces/ports/IUserRepository.js";
-import type { User } from "../../domain/interfaces/User.js";
+import type { User } from "../../domain/interfaces/User.ts";
 
 export const get_user_by_slug = (userRepository: IUserRepository) => {
   return async (slug: string): Promise<Result<User>> => {

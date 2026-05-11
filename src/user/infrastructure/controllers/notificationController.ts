@@ -1,9 +1,9 @@
 import type { Request, Response } from "express";
 import { updateUserRank } from "../../../notification/application/notifyRankUp.ts";
 import { handleResponse } from "../../../main/infrastructure/middlewares/handleResponseMiddleware.ts";
-import { fireOrmUserRepository } from "../firebase/fireOrmUserRepository.ts";
 import { socketIoNotifierRepository } from "../../../notification/infrastructure/adapters/socket/socketIoNotifier.ts";
 import { io } from "../../../server.ts";
+import { fireOrmUserRepository } from "../adapters/firebase/fireOrmUserRepository.ts";
 
 const userRepository = fireOrmUserRepository();
 

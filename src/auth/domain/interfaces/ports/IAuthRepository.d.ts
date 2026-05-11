@@ -1,4 +1,4 @@
-import type { User } from "../../../../user/domain/interfaces/User.js";
+import type { User } from "../../../../user/domain/interfaces/User.ts";
 import type { BannedTokensModel } from "../../../infrastructure/firebase/AuthModel.ts";
 import type { Token } from "../Token.js";
 import type { UserCredentials } from "../UserCrendentials.js";

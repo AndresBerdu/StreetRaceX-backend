@@ -5,7 +5,7 @@ import {
 import { failure, success, type Result } from "../../main/domain/Result.ts";
 import { comparatePassword } from "../../main/infrastructure/security/comparatePassword.ts";
 import type { IUserRepository } from "../../user/domain/interfaces/ports/IUserRepository.js";
-import type { User } from "../../user/domain/interfaces/User.js";
+import type { User } from "../../user/domain/interfaces/User.ts";
 import type { IAuthRepository } from "../domain/interfaces/ports/IAuthRepository.js";
 import type { UserCredentials } from "../domain/interfaces/UserCrendentials.js";
 

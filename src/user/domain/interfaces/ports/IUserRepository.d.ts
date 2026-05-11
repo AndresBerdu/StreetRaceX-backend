@@ -23,14 +23,5 @@ export interface IUserRepository {
     plate: string,
     data: Vehicle,
   ): Promise<Vehicle>;
-  update_vehicle_with_slug_by_user_slug(
-    slug: string,
-    vehicle_id: string,
-    data: Vehicle,
-  );
   delete_vehicle_with_plate_by_user_slug(slug: string, plate: string): void;
-  delete_vehicle_with_slug_by_user_slug(
-    slug: string,
-    vehicle_slug: string,
-  ): void;
 }

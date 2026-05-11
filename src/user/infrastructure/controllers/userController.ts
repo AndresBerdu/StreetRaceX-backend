@@ -1,13 +1,10 @@
 import type { Request, Response } from "express";
-import type { User } from "../../domain/interfaces/User.js";
 import { create_user } from "../../application/user/createUser.ts";
 import { get_users } from "../../application/user/getUsers.ts";
-import { UserShema } from "../../domain/schemas/UserShema.ts";
 import { generateSlug } from "../../../main/infrastructure/utils/generateSlug.ts";
 import { get_user_by_slug } from "../../application/user/getUserBySlug.ts";
 import { delete_user_by_slug } from "../../application/user/deleteUserBySlug.ts";
 import { UpdateUserShema } from "../../domain/schemas/UpdateUserShema.ts";
-import { fireOrmUserRepository } from "../firebase/fireOrmUserRepository.ts";
 import { encryptPassword } from "../../../main/infrastructure/security/encryptPassword.ts";
 import { uploadImage } from "../../../main/infrastructure/utils/uploadImage.ts";
 import { removeUndefinedBoby } from "../../../main/infrastructure/utils/removeUndefinedBoby.ts";
@@ -15,6 +12,11 @@ import { updateImage } from "../../../main/infrastructure/utils/updateImage.ts";
 import type { ZodError } from "zod/v4";
 import { handleResponse } from "../../../main/infrastructure/middlewares/handleResponseMiddleware.ts";
 import { update_user_by_slug } from "../../application/user/updateUserBySlug.ts";
+import {
+  CreateUserShema,
+  type CreateUser,
+} from "../../domain/schemas/CreateUserShema.ts";
+import { fireOrmUserRepository } from "../adapters/firebase/fireOrmUserRepository.ts";
 
 /* Repository from fireOrmRepository */
 const userFireRepository = fireOrmUserRepository();
@@ -84,8 +86,8 @@ export const createUser = async (req: Request, res: Response) => {
     if (typeof req.body.locality === "string") {
       req.body.locality = JSON.parse(req.body.locality);
     }
-    /* Fistly the object locality is convert to object */
 
+    /* Fistly the object locality is convert to object */
     const {
       username,
       password,
@@ -93,12 +95,13 @@ export const createUser = async (req: Request, res: Response) => {
       locality,
       role,
       rank,
+      state,
       victories,
       defeats,
       consecutive_victories,
-    } = UserShema.parse(req.body);
+    } = CreateUserShema.parse(req.body);
 
-    const userData: User = {
+    const userData: CreateUser = {
       username,
       password: await encryptPassword(password),
       email,
@@ -111,7 +114,7 @@ export const createUser = async (req: Request, res: Response) => {
       victories,
       defeats,
       consecutive_victories,
-      state: "active",
+      state,
       updated_at: new Date(),
       created_at: new Date(),
     };

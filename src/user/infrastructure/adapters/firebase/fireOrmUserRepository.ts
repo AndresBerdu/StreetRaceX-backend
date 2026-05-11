@@ -1,16 +1,16 @@
 import { getRepository } from "fireorm";
 import { UserModel } from "./UserModel.ts";
 import { v4 as uuidv4 } from "uuid";
-import { VehicleModel } from "../../../vehicle/infrastructure/firebase/VehicleModel.ts";
-import type { IUserRepository } from "../../domain/interfaces/ports/IUserRepository.js";
+import { VehicleModel } from "../../../../vehicle/infrastructure/firebase/VehicleModel.ts";
+import type { IUserRepository } from "../../../domain/interfaces/ports/IUserRepository.js";
 
-export const fireOrmUserRepository = (): IUserRepository => {
-  const userFireRepository = getRepository(UserModel);
-  const vehicleFireRepository = getRepository(VehicleModel);
+const userFireRepository = getRepository(UserModel);
+const vehicleFireRepository = getRepository(VehicleModel);
 
+export const fireOrmUserRepository = (): IUserRepository =>
   /* FUNCTIONS WITHOUT PARM */
 
-  return {
+  ({
     async count_users() {
       const users = await userFireRepository.find();
       return users.length;
@@ -123,20 +123,6 @@ export const fireOrmUserRepository = (): IUserRepository => {
       return await vehicleFireRepository.update(vehicle!);
     },
 
-    async update_vehicle_with_slug_by_user_slug(_slug, vehicle_slug, data) {
-      const vehicle = await vehicleFireRepository
-        .whereEqualTo("slug", vehicle_slug)
-        .findOne();
-
-      Object.assign(vehicle!, data);
-
-      if (data.active !== undefined) {
-        vehicle!.active = data.active;
-      }
-
-      return await vehicleFireRepository.update(vehicle!);
-    },
-
     async delete_vehicle_with_plate_by_user_slug(_slug, plate) {
       const vehicle = await vehicleFireRepository
         .whereEqualTo("plate", plate)
@@ -144,13 +130,4 @@ export const fireOrmUserRepository = (): IUserRepository => {
 
       return await vehicleFireRepository.delete(vehicle?.id!);
     },
-
-    async delete_vehicle_with_slug_by_user_slug(_slug, vehicle_slug) {
-      const vehicle = await vehicleFireRepository
-        .whereEqualTo("slug", vehicle_slug)
-        .findOne();
-
-      return await vehicleFireRepository.delete(vehicle?.id!);
-    },
-  };
-};
+  });

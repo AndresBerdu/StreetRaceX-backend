@@ -1,7 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { getPayloadToken } from "../../util/getPayloadToken.ts";
-import { get_user_by_slug } from "../../../../user/application/user/getUserBySlug.ts";
-import { fireOrmUserRepository } from "../../../../user/infrastructure/firebase/fireOrmUserRepository.ts";
+import { fireOrmUserRepository } from "../../../../user/infrastructure/adapters/firebase/fireOrmUserRepository.ts";
 
 const userRepository = fireOrmUserRepository();
 

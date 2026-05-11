@@ -1,5 +1,5 @@
 import { failure, success, type Result } from "../../../main/domain/Result.ts";
-import type { User } from "../../domain/interfaces/User.js";
+import type { User } from "../../domain/interfaces/User.ts";
 import {
   alreadyExist,
   forbidden,

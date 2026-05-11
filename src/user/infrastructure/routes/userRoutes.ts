@@ -10,11 +10,9 @@ import {
 import {
   createVehicleByUserSlug,
   deleteVehicleWithPlateByUserSlug,
-  deleteVehicleWithSlugByUserSlug,
   getVehiclesByUserSlug,
   updateVehiclePhoto,
   updateVehicleWithPlateByUserSlug,
-  updateVehicleWithSlugByUserSlug,
 } from "../controllers/vehicleController.ts";
 import { validateRoleToken } from "../../../auth/infrastructure/middlewares/token/validateRoleTokenMiddleware.ts";
 import upload from "../../../main/infrastructure/config/multerConfiguration.ts";
@@ -65,15 +63,6 @@ userRouters
     updateVehicleWithPlateByUserSlug,
   )
   .delete(deleteVehicleWithPlateByUserSlug);
-
-userRouters
-  .route("/:slug/vehicles/slug/:vehicle_slug")
-  .patch(
-    validateJsonContentType,
-    validateSlugAndRoleToken,
-    updateVehicleWithSlugByUserSlug,
-  )
-  .delete(deleteVehicleWithSlugByUserSlug);
 
 /* Aditional route for update profile photo */
 userRouters

@@ -6,8 +6,8 @@ import { reject_challenge } from "../../application/rejectChallenge.ts";
 import { cancel_challenge } from "../../application/cancelChallenge.ts";
 import { start_challenge } from "../../application/startChallenge.ts";
 import { complete_challenge } from "../../application/completeChallenge.ts";
-import { fireOrmUserRepository } from "../../../user/infrastructure/firebase/fireOrmUserRepository.ts";
 import { fireOrmChallengeRepository } from "../firebase/fireOrmChallengeRepository.ts";
+import { fireOrmUserRepository } from "../../../user/infrastructure/adapters/firebase/fireOrmUserRepository.ts";
 
 const challengeFireoRepository = fireOrmChallengeRepository();
 const userFireRepository = fireOrmUserRepository();

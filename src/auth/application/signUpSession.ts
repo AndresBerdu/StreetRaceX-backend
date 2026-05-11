@@ -2,7 +2,7 @@ import { alreadyExist } from "../../main/domain/AppError.ts";
 import { failure, success, type Result } from "../../main/domain/Result.ts";
 import type { IUserRepository } from "../../user/domain/interfaces/ports/IUserRepository.js";
 
-import type { User } from "../../user/domain/interfaces/User.js";
+import type { User } from "../../user/domain/interfaces/User.ts";
 import type { IAuthRepository } from "../domain/interfaces/ports/IAuthRepository.js";
 
 export const sign_up_session = (

@@ -1,10 +1,11 @@
-import type { User } from "../../domain/interfaces/User.js";
+import type { User } from "../../domain/interfaces/User.ts";
 import { failure, success, type Result } from "../../../main/domain/Result.ts";
 import { alreadyExist } from "../../../main/domain/AppError.ts";
 import type { IUserRepository } from "../../domain/interfaces/ports/IUserRepository.js";
+import type { CreateUser } from "../../domain/schemas/CreateUserShema.ts";
 
 export const create_user = (userRepository: IUserRepository) => {
-  return async (data: User): Promise<Result<User>> => {
+  return async (data: CreateUser): Promise<Result<User>> => {
     /* Validation if the user try to create a new user with one username equal anther user */
     const userExist = await userRepository.get_user_by_username(data.username);
 

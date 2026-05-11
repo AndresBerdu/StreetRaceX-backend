@@ -6,6 +6,7 @@ export const UpdateUserShema = UserShema.extend({
   locality: LocalitySchema.partial().optional(),
   id: z.string().optional(),
   slug: z.string().optional(),
+  rank: z.enum(["S", "A", "B", "C", "D"]).optional(),
   created_at: z.date().optional(),
   updated_at: z.date().optional(),
 }).partial();

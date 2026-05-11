@@ -1,19 +1,5 @@
 import { Collection } from "fireorm";
-import type { Locality } from "../../domain/interfaces/User.js";
-
-export const Rank = {
-  S: "S",
-  A: "A",
-  B: "B",
-  C: "C",
-  D: "D",
-} as const;
-
-export const State = {
-  ACTIVE: "active",
-  INACTIVE: "inactive",
-  SUSPENDED: "suspended",
-} as const;
+import type { Locality, Rank, Role, State } from "../../../domain/interfaces/User.ts";
 
 @Collection("users")
 export class UserModel {
@@ -25,12 +11,12 @@ export class UserModel {
   profile_photo!: string;
   public_id_photo!: string;
   locality!: Locality;
-  role!: string;
-  rank!: string;
+  role!: Role;
+  rank!: Rank;
   victories!: number;
   defeats!: number;
   consecutive_victories!: number;
-  state!: string;
-  created_at!: Date;
+  state!: State;
   updated_at!: Date;
+  created_at!: Date;
 }
