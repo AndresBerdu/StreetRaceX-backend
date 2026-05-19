@@ -7,7 +7,7 @@
     "dev": "nodemon --watch src --exec node --loader ts-node/esm ./src/server.ts",
     "build": "npx tsc",
     "start": "node build/app.js",
-    "test": "npx vitest run"
+    "test": "npx vitest run --coverage"
   },
   "keywords": [],
   "author": "",
@@ -45,6 +45,8 @@
     "@types/node": "^25.3.5",
     "@types/streamifier": "^0.1.2",
     "@types/supertest": "^7.2.0",
+    "@vitest/coverage-v8": "^4.1.5",
+    "c8": "^11.0.0",
     "morgan": "^1.10.1",
     "nodemon": "^3.1.14",
     "supertest": "^7.2.2",
