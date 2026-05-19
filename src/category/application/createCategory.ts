@@ -1,8 +1,8 @@
-import type { Category } from "../domain/interfaces/Category.ts";
 
 import { success, failure, type Result } from "../../main/domain/Result.ts";
 import { alreadyExist } from "../../main/domain/AppError.ts";
-import type { ICategoryRepository } from "../domain/interfaces/ICategoryRepositoy.js";
+import type { ICategoryRepository } from "../domain/interfaces/ports/ICategoryRepositoy.js";
+import type { Category } from "../domain/types/Category.ts";
 
 export const create_category = (categoryRepository: ICategoryRepository) => {
   console.log("CREATE CATEGORY HIT");
