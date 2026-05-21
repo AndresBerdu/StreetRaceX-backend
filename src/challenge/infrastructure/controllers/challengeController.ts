@@ -1,77 +1,105 @@
 import type { Request, Response } from "express";
 
 import { create_challenge } from "../../application/createChallenge.ts";
-import { accept_challenge } from "../../application/acceptedChallenge.ts";
-import { reject_challenge } from "../../application/rejectChallenge.ts";
-import { cancel_challenge } from "../../application/cancelChallenge.ts";
-import { start_challenge } from "../../application/startChallenge.ts";
-import { complete_challenge } from "../../application/completeChallenge.ts";
-import { fireOrmChallengeRepository } from "../firebase/fireOrmChallengeRepository.ts";
+import { fireOrmChallengeRepository } from "../ports/firebase/fireOrmChallengeRepository.ts";
 import { fireOrmUserRepository } from "../../../user/infrastructure/adapters/firebase/fireOrmUserRepository.ts";
+import { generateSlug } from "../../../main/infrastructure/utils/generateSlug.ts";
+import {
+  ChallengeStatus,
+  type Challenge,
+} from "../../domain/types/Challenge.ts";
+import { handleResponse } from "../../../main/infrastructure/middlewares/handleResponseMiddleware.ts";
+import { update_challenge } from "../../application/updateChallenge.ts";
+import type { updateChallenge } from "../../domain/schemas/UpdateShema.ts";
+import type { ZodError } from "zod/v4";
 
 const challengeFireoRepository = fireOrmChallengeRepository();
 const userFireRepository = fireOrmUserRepository();
 
-// CREATE
-export const createChallengeController = async (
-  req: Request,
-  res: Response,
-) => {
-  const result = await create_challenge(
-    challengeFireoRepository,
-    userFireRepository as any,
-  )(req.body);
-  res.status(result.statusCode).json(result);
+export const createChallenge = async (req: Request, res: Response) => {
+  try {
+    const {
+      challenger_slug,
+      challenged_slug,
+      type_race,
+      vehicle_challenger_slug,
+      vehicle_challenged_slug,
+      locality_rece,
+      date_race,
+      notes,
+    } = req.body;
+
+    const dateArray = date_race.split("/");
+    const date = new Date(dateArray[2], dateArray[1] - 1, dateArray[0]);
+
+    const challenge: Challenge = {
+      slug: generateSlug("challenge"),
+      challenger_slug,
+      challenged_slug,
+      type_race,
+      vehicle_challenger_slug,
+      vehicle_challenged_slug,
+      locality_rece,
+      date_race: date,
+      notes,
+      status: ChallengeStatus.CREATED,
+      winner_slug: null,
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
+
+    const result = await create_challenge(
+      challengeFireoRepository,
+      userFireRepository,
+    )(challenge);
+
+    handleResponse(res, result);
+  } catch (error) {
+    if ((error as ZodError)?.constructor?.name === "ZodError") {
+      return res.status(422).json({
+        ok: false,
+        error: (error as ZodError).issues.map((issue) => {
+          return issue.message;
+        }),
+      });
+    }
+
+    if (error instanceof Error) {
+      res.status(500).json({
+        ok: false,
+        message: error.message,
+      });
+    }
+  }
 };
 
 // ACCEPT
-export const acceptChallengeController = async (
+export const updateChallengeController = async (
   req: Request,
   res: Response,
 ) => {
-  const result = await accept_challenge(challengeFireoRepository)(
-    (req.params as any).id,
-  );
-  res.status(result.statusCode).json(result);
-};
+  try {
+    const slug = req.params.slug as string;
+    const data = req.body as updateChallenge;
 
-// REJECT
-export const rejectChallengeController = async (
-  req: Request,
-  res: Response,
-) => {
-  const result = await reject_challenge(challengeFireoRepository)(
-    (req.params as any).id,
-  );
-  res.status(result.statusCode).json(result);
-};
+    const result = await update_challenge(challengeFireoRepository)(slug, data);
 
-// CANCEL
-export const cancelChallengeController = async (
-  req: Request,
-  res: Response,
-) => {
-  const result = await cancel_challenge(challengeFireoRepository)(
-    (req.params as any).id,
-  );
-  res.status(result.statusCode).json(result);
-};
+    return handleResponse(res, result);
+  } catch (error) {
+    if ((error as ZodError)?.constructor?.name === "ZodError") {
+      return res.status(422).json({
+        ok: false,
+        error: (error as ZodError).issues.map((issue) => {
+          return issue.message;
+        }),
+      });
+    }
 
-// START
-export const startChallengeController = async (req: Request, res: Response) => {
-  const result = await start_challenge(challengeFireoRepository)(
-    (req.params as any).id,
-  );
-  res.status(result.statusCode).json(result);
-};
-
-// COMPLETE
-export const completeChallengeController = async (
-  req: Request,
-  res: Response,
-) => {
-  const result = await complete_challenge(challengeFireoRepository)(
-    (req.params as any).id,
-  );
-  res.status(result.statusCode).json(result);
+    if (error instanceof Error) {
+      res.status(500).json({
+        ok: false,
+        message: error.message,
+      });
+    }
+  }
 };

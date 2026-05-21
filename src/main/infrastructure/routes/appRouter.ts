@@ -4,7 +4,7 @@ import authRouter from "../../../auth/infrastructure/routes/authRoutes.ts";
 import vehicleRoutes from "../../../vehicle/infrastructure/routes/vehicleRoutes.ts";
 import { validateToken } from "../../../auth/infrastructure/middlewares/token/validateTokenMiddleware.ts";
 import categoryRouters from "../../../category/infrastructure/routes/categoryRouters.ts";
-import challengesRoutes from "../../../challenge/infrastructure/routes/challenge.ts";
+import challengesRoutes from "../../../challenge/infrastructure/routes/challengeRoutes.ts";
 
 const router: Router = Router();
 

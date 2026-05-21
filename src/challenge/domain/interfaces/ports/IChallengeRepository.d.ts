@@ -1,8 +1,10 @@
 import { Challenge } from "../interfaces/challenge.interface";
 
 export interface IChallengeRepository {
-  createChallenge: (data: Challenge) => Promise<Challenge>; 
-  getById: (id: string) => Promise<Challenge | null>;
-  findById: (id: string) => Promise<Challenge | null>;
-  updateChallenge: (id: string, data: Partial<Challenge>) => Promise<Challenge>;
+  get_challenge_by_slug: (slug: string) => Promise<Challenge | null>;
+  create_challenge: (data: Challenge) => Promise<Challenge>;
+  update_challenge: (
+    slug: string,
+    data: Partial<Challenge>,
+  ) => Promise<Challenge>;
 }

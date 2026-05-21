@@ -7,7 +7,7 @@ import {
 import { failure, success, type Result } from "../../main/domain/Result.ts";
 
 import type { IUserRepository } from "../../user/domain/interfaces/ports/IUserRepository.js";
-import type { Challenge } from "../domain/interfaces/Challenge.js";
+import type { Challenge } from "../domain/types/Challenge.js";
 import type { IChallengeRepository } from "../domain/interfaces/ports/IChallengeRepository.js";
 
 export const create_challenge = (
@@ -15,12 +15,12 @@ export const create_challenge = (
   userRepository: IUserRepository,
 ) => {
   return async (data: Challenge): Promise<Result<Challenge>> => {
-    if (data.challenger_id === data.challenged_id) {
+    if (data.challenger_slug === data.challenged_slug) {
       return failure(unprocessableEntity("You can't challenge yourself"));
     }
 
-    const challenger = await userRepository.get_user_by_id(data.challenger_id);
-    const challenged = await userRepository.get_user_by_id(data.challenged_id);
+    const challenger = await userRepository.get_user_by_slug(data.challenger_slug);
+    const challenged = await userRepository.get_user_by_slug(data.challenged_slug);
 
     const challengerVehicles = await userRepository.get_vehicles_by_user_slug(
       challenger.slug,
@@ -69,14 +69,12 @@ export const create_challenge = (
 
     const challengeToCreate: Challenge = {
       ...data,
-      vehicle_challenger_id: challengerActiveVehicle.id,
-      vehicle_challenged_id: challengedActiveVehicle.id,
-      status: "CREATED",
-      createdAt: new Date(),
+      vehicle_challenger_slug: challengerActiveVehicle.slug,
+      vehicle_challenged_slug: challengedActiveVehicle.slug,
     };
 
     const challenge =
-      await challengeRepository.createChallenge(challengeToCreate);
+      await challengeRepository.create_challenge(challengeToCreate);
 
     return success(201, challenge, "Challenge created");
   };

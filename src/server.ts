@@ -7,7 +7,7 @@ import { initSocket } from "./main/infrastructure/config/configSocket.ts";
 dotenv.config({ path: "./src/.env" });
 const PORT = parseInt(process.env.PORT!) || 8000;
 
-export const app = createApp();   // aquí exportas la instancia de Express
+export const app = createApp(); 
 
 const server = http.createServer(app);
 export const io = initSocket(server); 
