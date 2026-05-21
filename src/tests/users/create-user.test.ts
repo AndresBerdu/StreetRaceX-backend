@@ -40,6 +40,8 @@ describe("User create new user", () => {
       .attach("profile_photo", "src/tests/files/takumiImage.jpg")
       .set("Cookie", cookies);
 
+      console.log(res.body);
+
     /* Status code response */
     expect(res.status).toBe(201);
 
