@@ -9,9 +9,10 @@ import {
 } from "../controllers/userController.ts";
 import {
   createVehicleByUserSlug,
-  deleteVehicleByVehicleSlugByUserSlug,
+  deleteVehicleWithPlateByUserSlug,
   getVehiclesByUserSlug,
-  updateVehicleByVehicleSlugByUserSlug,
+  updateVehiclePhoto,
+  updateVehicleWithPlateByUserSlug,
 } from "../controllers/vehicleController.ts";
 import { validateRoleToken } from "../../../auth/infrastructure/middlewares/token/validateRoleTokenMiddleware.ts";
 import upload from "../../../main/infrastructure/config/multerConfiguration.ts";
@@ -55,14 +56,23 @@ userRouters
   .post(upload.single("photo"), uploadErrorHandler, createVehicleByUserSlug);
 
 userRouters
-  .route("/:slug/vehicles/:vehicle_slug")
+  .route("/:slug/vehicles/plate/:plate")
+  .patch(
+    validateJsonContentType,
+    validateSlugAndRoleToken,
+    updateVehicleWithPlateByUserSlug,
+  )
+  .delete(deleteVehicleWithPlateByUserSlug);
+
+/* Aditional route for update profile photo */
+userRouters
+  .route("/:slug/vehicles/slug/:vehicle_slug/profile_photo")
   .patch(
     upload.single("photo"),
     uploadErrorHandler,
     validateSlugAndRoleToken,
-    updateVehicleByVehicleSlugByUserSlug,
-  )
-  .delete(validateSlugAndRoleToken, deleteVehicleByVehicleSlugByUserSlug);
+    updateVehiclePhoto,
+  );
 
 // User with notification routes
 userRouters
